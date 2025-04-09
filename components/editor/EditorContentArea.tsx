@@ -1,8 +1,8 @@
 import DocumentEditor from "@/components/document-editor";
+import AiSuggestionDiff from "@/components/ai-suggestion-diff";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import React from "react";
-import SideBySideEditor from "./SideBySideEditor";
 
 interface EditorContentAreaProps {
   /** Whether to show the AI suggestion diff view */
@@ -13,8 +13,6 @@ interface EditorContentAreaProps {
   onDocumentContentChange: (content: string) => void;
   /** The AI-suggested text */
   aiSuggestion: string;
-  /** The merge conflict representation for the diff view */
-  mergeConflictText: string;
   /** Callback function to accept all AI suggestions */
   onAcceptAll: () => void;
   /** Callback function to reject all AI suggestions */
@@ -32,7 +30,6 @@ export const EditorContentArea: React.FC<EditorContentAreaProps> = ({
   documentContent,
   onDocumentContentChange,
   aiSuggestion,
-  mergeConflictText,
   onAcceptAll,
   onRejectAll,
   onFinalizeChanges,
@@ -46,19 +43,18 @@ export const EditorContentArea: React.FC<EditorContentAreaProps> = ({
               <Sparkles className="h-5 w-5 text-primary mr-2" />
               <span className="font-medium">AI Suggestion</span>
             </div>
-            {/* Note: finalizeChanges applies the partially accepted text */}
             <Button size="sm" className="gap-1" onClick={onFinalizeChanges}>
               Apply & Continue Editing
             </Button>
           </div>
 
-          <SideBySideEditor
+          <AiSuggestionDiff
             originalText={documentContent}
             suggestedText={aiSuggestion}
             onAcceptAll={onAcceptAll}
             onRejectAll={onRejectAll}
-            onFinalizeChanges={(newText) => {
-              onDocumentContentChange(newText);
+            onFinalizeChanges={(finalText) => {
+              onDocumentContentChange(finalText);
               onFinalizeChanges();
             }}
           />

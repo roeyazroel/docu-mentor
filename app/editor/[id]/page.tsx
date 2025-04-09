@@ -8,7 +8,6 @@ import { EditorUsersPanel } from "@/components/editor/EditorUsersPanel";
 import ProjectSidebar, { type ProjectItem } from "@/components/project-sidebar";
 import ResizablePanel from "@/components/resizable-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { generateMergeConflict } from "@/lib/diff-utils";
 import { hasOpenAIKey } from "@/lib/openai";
 import { cleanAiResponse } from "@/lib/text-processing";
 import { MessageSquare, Users } from "lucide-react";
@@ -118,7 +117,6 @@ export default function EditorPage() {
     "saved"
   );
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [mergeConflictText, setMergeConflictText] = useState("");
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -270,15 +268,8 @@ export default function EditorPage() {
         },
       ]);
 
-      // Keep generating the merge conflict for backward compatibility
-      const conflictText = generateMergeConflict(
-        documentContent,
-        aiResponseContent
-      );
-
       // Set the AI suggestion and show the diff view
       setAiSuggestion(aiResponseContent);
-      setMergeConflictText(conflictText);
       setShowDiff(true);
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
@@ -319,8 +310,7 @@ export default function EditorPage() {
   };
 
   const finalizeChanges = () => {
-    // This is now handled by the SideBySideEditor through the EditorContentArea
-    // The editor directly updates documentContent and calls this to hide diff
+    // The new text is now applied via the onFinalizeChanges callback in EditorContentArea
     setShowDiff(false);
     setAiSuggestion("");
   };
@@ -434,7 +424,6 @@ export default function EditorPage() {
           documentContent={documentContent}
           onDocumentContentChange={setDocumentContent}
           aiSuggestion={aiSuggestion}
-          mergeConflictText={mergeConflictText}
           onAcceptAll={acceptAllChanges}
           onRejectAll={rejectAllChanges}
           onFinalizeChanges={finalizeChanges}

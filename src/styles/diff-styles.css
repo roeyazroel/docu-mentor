@@ -1,0 +1,26 @@
+/* src/styles/diff-styles.css */
+
+.diff-insert {
+  background-color: #d4edda; /* Light green */
+  color: #155724; /* Dark green */
+  text-decoration: none; /* Ensure no strikethrough from delete overrides */
+}
+
+.diff-delete {
+  background-color: #f8d7da; /* Light red */
+  color: #721c24; /* Dark red */
+  text-decoration: line-through;
+}
+
+.diff-equal {
+  /* No special styling needed, inherits default text styles */
+}
+
+/* Optional: Add some padding and block display for better readability */
+#diff-container span { /* Adjust selector if needed */
+   padding: 1px 2px;
+   margin: 0 1px;
+   border-radius: 3px;
+   white-space: pre-wrap; /* Preserve whitespace and line breaks */
+   word-wrap: break-word; /* Break long words */
+} 
