@@ -9,7 +9,6 @@ import ProjectSidebar, { type ProjectItem } from "@/components/project-sidebar";
 import ResizablePanel from "@/components/resizable-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { hasOpenAIKey } from "@/lib/openai";
-import { cleanAiResponse } from "@/lib/text-processing";
 import { MessageSquare, Users } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
@@ -112,7 +111,6 @@ export default function EditorPage() {
   ]);
   const [hasApiKey, setHasApiKey] = useState(false);
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
-  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
     "saved"
   );
@@ -128,7 +126,7 @@ export default function EditorPage() {
           if (item.type === "file" && item.id === activeFileId) {
             setDocumentTitle(item.name);
             return item.content;
-          } else if (item.type === "folder") {
+          } else if (item.type === "folder" && item.children) {
             const content = findFileContent(item.children);
             if (content !== null) {
               return content;
@@ -144,6 +142,32 @@ export default function EditorPage() {
       }
     }
   }, [activeFileId, projectItems]);
+
+  // Initialize with the first file's content
+  useEffect(() => {
+    if (!activeFileId && projectItems.length > 0) {
+      const findFirstFile = (items: ProjectItem[]): string | null => {
+        for (const item of items) {
+          if (item.type === "file") {
+            setActiveFileId(item.id);
+            setDocumentTitle(item.name);
+            return item.content;
+          } else if (item.type === "folder" && item.children) {
+            const content = findFirstFile(item.children);
+            if (content !== null) {
+              return content;
+            }
+          }
+        }
+        return null;
+      };
+
+      const content = findFirstFile(projectItems);
+      if (content !== null) {
+        setDocumentContent(content);
+      }
+    }
+  }, []);
 
   // Save the current document content to the project structure
   const saveDocument = () => {
@@ -167,7 +191,7 @@ export default function EditorPage() {
 
     // In a real app, we would save to the server here
     // For example:
-    // saveToServer(activeFileId, documentContent, documentTitle)
+    saveToServer(activeFileId, documentContent, documentTitle);
   };
 
   // Add this function to simulate saving to a server (for demonstration purposes)
@@ -208,69 +232,46 @@ export default function EditorPage() {
     const userMessage = { role: "user", content: inputMessage, id: messageId };
     setChatMessages((prev) => [...prev, userMessage]);
     const currentInput = inputMessage;
+    const currentDocContent = documentContent;
+    console.log(
+      "Sending message with document content:",
+      currentDocContent.substring(0, 100) + "..."
+    );
     setInputMessage("");
     setIsGenerating(true);
     setApiKeyError(null);
 
     try {
       let aiResponseContent: string;
+      let aiResponseSummary: string;
       const apiKeyAvailable = hasOpenAIKey();
-
       if (!apiKeyAvailable) {
-        // Use mock response if no API key is available
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
-
-        // Generate a mock response based on the input
-        if (
-          currentInput.toLowerCase().includes("improve") ||
-          currentInput.toLowerCase().includes("enhance")
-        ) {
-          aiResponseContent =
-            documentContent +
-            "\n\nThis document effectively communicates the key points while maintaining a professional tone.";
-        } else if (currentInput.toLowerCase().includes("summarize")) {
-          aiResponseContent =
-            "The document discusses key points about the project requirements and implementation details.";
-        } else if (currentInput.toLowerCase().includes("help")) {
-          aiResponseContent =
-            "I can help you with your document in several ways:\n\n" +
-            "- Improve the writing style and clarity\n" +
-            "- Suggest additional content\n" +
-            "- Summarize sections\n" +
-            "- Check for consistency\n\n" +
-            "Just let me know what you need!";
-        } else {
-          aiResponseContent =
-            "I understand you're working on a document. Would you like me to help improve it, suggest additional content, or provide feedback on the current text?";
-        }
-
-        // Clean the mock response
-        aiResponseContent = cleanAiResponse(aiResponseContent);
-
-        setApiKeyError(
-          "OpenAI API key is missing. Using mock responses for demo purposes."
-        );
+        aiResponseContent =
+          "I'm sorry, I encountered an error generating the AI response. Please try again.";
+        aiResponseSummary =
+          "I'm sorry, I encountered an error generating the AI response. Please try again.";
       } else {
-        // Call the server action if key is available
-        aiResponseContent = await generateAiResponse(
+        const aiResponse = await generateAiResponse(
           currentInput,
-          documentContent
+          currentDocContent
         );
+        aiResponseContent = aiResponse.content;
+        aiResponseSummary = aiResponse.summary;
+
+        // Update chat with summary
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: aiResponseSummary,
+            id: messageId + "-response",
+          },
+        ]);
+
+        // Set the AI suggestion content and show the diff view
+        setAiSuggestion(aiResponseContent);
+        setShowDiff(true);
       }
-
-      // Update chat and suggestion state regardless of mock/real response
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: aiResponseContent,
-          id: messageId + "-response",
-        },
-      ]);
-
-      // Set the AI suggestion and show the diff view
-      setAiSuggestion(aiResponseContent);
-      setShowDiff(true);
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
       const errorMessage =

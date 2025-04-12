@@ -208,3 +208,79 @@ body {
 .font-mono {
   font-family: monospace;
 }
+
+/* MD Editor Styles */
+.w-md-editor-toolbar {
+  @apply bg-background border-b border-border;
+}
+
+.w-md-editor {
+  @apply bg-background text-foreground border border-border rounded-md;
+  background-color: hsl(var(--background)) !important;
+}
+
+.w-md-editor-preview {
+  @apply bg-background;
+  background-color: hsl(var(--background)) !important;
+}
+
+.w-md-editor-content {
+  @apply bg-background text-foreground;
+  background-color: hsl(var(--background)) !important;
+}
+
+.w-md-editor-text {
+  @apply text-foreground;
+}
+
+/* Preview content styling */
+.wmde-markdown {
+  @apply bg-background text-foreground;
+  background-color: hsl(var(--background)) !important;
+}
+
+.wmde-markdown-var code {
+  @apply bg-muted text-foreground;
+}
+
+[data-color-mode="dark"] .w-md-editor-toolbar {
+  @apply bg-background border-border;
+}
+
+[data-color-mode="dark"] .w-md-editor {
+  @apply bg-background text-card-foreground;
+  background-color: hsl(var(--background)) !important;
+}
+
+[data-color-mode="dark"] .w-md-editor-preview {
+  @apply bg-background;
+  background-color: hsl(var(--background)) !important;
+}
+
+[data-color-mode="dark"] .w-md-editor-content {
+  @apply bg-background;
+  background-color: hsl(var(--background)) !important;
+}
+
+[data-color-mode="dark"] .w-md-editor-text {
+  @apply text-card-foreground;
+}
+
+[data-color-mode="dark"] .wmde-markdown-var {
+  @apply bg-background text-card-foreground;
+  background-color: hsl(var(--background)) !important;
+}
+
+[data-color-mode="dark"] .wmde-markdown {
+  @apply bg-background text-card-foreground;
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Fix code blocks in dark mode */
+[data-color-mode="dark"] .wmde-markdown-var pre {
+  @apply bg-muted;
+}
+
+[data-color-mode="dark"] .wmde-markdown-var code {
+  @apply bg-muted text-card-foreground;
+}

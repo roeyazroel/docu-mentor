@@ -1,5 +1,5 @@
-import DocumentEditor from "@/components/document-editor";
 import AiSuggestionDiff from "@/components/ai-suggestion-diff";
+import DocumentEditor from "@/components/document-editor";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import React from "react";
@@ -60,10 +60,12 @@ export const EditorContentArea: React.FC<EditorContentAreaProps> = ({
           />
         </div>
       ) : (
-        <DocumentEditor
-          content={documentContent}
-          onChange={onDocumentContentChange}
-        />
+        <div className="flex-1 overflow-hidden">
+          <DocumentEditor
+            content={documentContent}
+            onChange={onDocumentContentChange}
+          />
+        </div>
       )}
     </div>
   );
