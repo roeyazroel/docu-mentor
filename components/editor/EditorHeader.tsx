@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,113 +7,78 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, FileText, History, Settings, Users } from "lucide-react";
+import { useEditorContext } from "@/context/EditorContext";
+import {
+  ChevronDown,
+  FileText,
+  History,
+  Settings,
+  Share2,
+  Users,
+} from "lucide-react";
 import React from "react";
 
-type SaveStatus = "saved" | "saving" | "unsaved";
-
-interface EditorHeaderProps {
-  /** The current title of the document */
-  documentTitle: string;
-  /** Callback function when the document title changes */
-  onDocumentTitleChange: (title: string) => void;
-  /** The current save status of the document */
-  saveStatus: SaveStatus;
-}
-
-/**
- * Renders the header section of the editor interface, including title,
- * save status indicator, and action buttons like Share, History, Settings.
- */
-export const EditorHeader: React.FC<EditorHeaderProps> = ({
-  documentTitle,
-  onDocumentTitleChange,
-  saveStatus,
-}) => {
-  const getBadgeClasses = (status: SaveStatus) => {
-    switch (status) {
-      case "saving":
-        return "bg-yellow-100 dark:bg-yellow-900/30";
-      case "unsaved":
-        return "bg-blue-100 dark:bg-blue-900/30";
-      case "saved":
-      default:
-        return "";
-    }
-  };
-
-  const getStatusIndicatorClasses = (status: SaveStatus) => {
-    switch (status) {
-      case "saving":
-        return "bg-yellow-500 animate-pulse";
-      case "unsaved":
-        return "bg-blue-500";
-      case "saved":
-      default:
-        return "bg-green-500";
-    }
-  };
-
-  const getStatusText = (status: SaveStatus) => {
-    switch (status) {
-      case "saving":
-        return "Saving...";
-      case "unsaved":
-        return "Unsaved";
-      case "saved":
-      default:
-        return "Saved";
-    }
-  };
+export const EditorHeader: React.FC = () => {
+  const { documentTitle, setDocumentTitle } = useEditorContext();
 
   return (
-    <header className="border-b">
-      <div className="container flex h-14 items-center px-4">
-        <div className="flex items-center gap-2 mr-4">
+    <header className="border-b pl-1 pr-1 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
+      <div className="flex h-16 items-center px-0 w-full">
+        <div className="flex items-center gap-2 mr-6">
           <FileText className="h-5 w-5 text-primary" />
-          <span className="font-semibold">DocuMentor</span>
+          <span className="font-bold text-lg">DocuMentor</span>
         </div>
-        <div className="flex-1 flex items-center gap-2">
+        <div className="flex-1 flex items-center">
           <Input
             value={documentTitle}
-            onChange={(e) => onDocumentTitleChange(e.target.value)}
-            className="h-9 w-[250px] border-none text-lg font-medium focus-visible:ring-0"
+            onChange={(e) => setDocumentTitle(e.target.value)}
+            className="h-9 max-w-[350px] border-none text-lg font-medium focus-visible:ring-1 transition-all focus:max-w-[450px] focus:placeholder:opacity-0"
             aria-label="Document Title"
+            placeholder="Untitled Document"
           />
-          <Badge
-            variant="outline"
-            className={`ml-2 ${getBadgeClasses(saveStatus)}`}
-          >
-            <span
-              className={`h-2 w-2 rounded-full mr-1 ${getStatusIndicatorClasses(
-                saveStatus
-              )}`}
-            ></span>
-            {getStatusText(saveStatus)}
-          </Badge>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <History className="h-4 w-4 mr-2" />
+            History
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1">
-                <Users className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="gap-2">
+                <Share2 className="h-4 w-4" />
                 Share
                 <ChevronDown className="h-3 w-3 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Copy link</DropdownMenuItem>
-              <DropdownMenuItem>Invite users</DropdownMenuItem>
-              <DropdownMenuItem>Manage access</DropdownMenuItem>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem className="flex gap-2 cursor-pointer">
+                <Users className="h-4 w-4" />
+                Invite collaborators
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
+                Copy link
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
+                Manage access
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <History className="h-4 w-4 mr-1" />
-            History
-          </Button>
-          <Button variant="outline" size="sm">
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full h-9 w-9"
+            aria-label="Settings"
+          >
             <Settings className="h-4 w-4" />
           </Button>
+
+          <ModeToggle />
         </div>
       </div>
     </header>

@@ -1,8 +1,8 @@
 import AiSuggestionDiff from "@/components/ai-suggestion-diff";
-import DocumentEditor from "@/components/document-editor";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import React from "react";
+import { PlateEditor } from "../editorv2/plate-editor";
 
 interface EditorContentAreaProps {
   /** Whether to show the AI suggestion diff view */
@@ -61,7 +61,7 @@ export const EditorContentArea: React.FC<EditorContentAreaProps> = ({
         </div>
       ) : (
         <div className="flex-1 overflow-hidden">
-          <DocumentEditor
+          <PlateEditor
             content={documentContent}
             onChange={onDocumentContentChange}
           />

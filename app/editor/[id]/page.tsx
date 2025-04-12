@@ -3,15 +3,18 @@
 import AiChatPanel from "@/components/ai-chat-panel";
 import { ApiKeyErrorDisplay } from "@/components/editor/ApiKeyErrorDisplay";
 import { EditorContentArea } from "@/components/editor/EditorContentArea";
-import { EditorHeader } from "@/components/editor/EditorHeader";
 import { EditorUsersPanel } from "@/components/editor/EditorUsersPanel";
+import { SaveIndicator } from "@/components/editor/SaveIndicator";
 import ProjectSidebar, { type ProjectItem } from "@/components/project-sidebar";
 import ResizablePanel from "@/components/resizable-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEditorContext } from "@/context/EditorContext";
 import { hasOpenAIKey } from "@/lib/openai";
 import { MessageSquare, Users } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { generateAiResponse } from "./actions";
 
 // Mock initial project structure with storage providers
@@ -86,10 +89,10 @@ const initialProject: ProjectItem[] = [
 export default function EditorPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { documentTitle, setDocumentTitle } = useEditorContext();
   const [projectItems, setProjectItems] =
     useState<ProjectItem[]>(initialProject);
   const [activeFileId, setActiveFileId] = useState<string | null>("file-1");
-  const [documentTitle, setDocumentTitle] = useState("Untitled Document");
   const [documentContent, setDocumentContent] = useState("");
   const [aiSuggestion, setAiSuggestion] = useState("");
   const [showDiff, setShowDiff] = useState(false);
@@ -141,7 +144,7 @@ export default function EditorPage() {
         setDocumentContent(content);
       }
     }
-  }, [activeFileId, projectItems]);
+  }, [activeFileId, projectItems, setDocumentTitle]);
 
   // Initialize with the first file's content
   useEffect(() => {
@@ -190,7 +193,6 @@ export default function EditorPage() {
     setProjectItems(updateFileContent(projectItems));
 
     // In a real app, we would save to the server here
-    // For example:
     saveToServer(activeFileId, documentContent, documentTitle);
   };
 
@@ -232,6 +234,10 @@ export default function EditorPage() {
     const userMessage = { role: "user", content: inputMessage, id: messageId };
     setChatMessages((prev) => [...prev, userMessage]);
     const currentInput = inputMessage;
+    const messages = [
+      ...chatMessages,
+      { role: "user", content: currentInput, id: messageId },
+    ];
     const currentDocContent = documentContent;
     console.log(
       "Sending message with document content:",
@@ -252,10 +258,14 @@ export default function EditorPage() {
           "I'm sorry, I encountered an error generating the AI response. Please try again.";
       } else {
         const aiResponse = await generateAiResponse(
-          currentInput,
+          messages.map((message) => ({
+            id: message.id,
+            role: message.role as "user" | "assistant",
+            content: message.content,
+          })),
           currentDocContent
         );
-        aiResponseContent = aiResponse.content;
+        aiResponseContent = aiResponse.content ?? "";
         aiResponseSummary = aiResponse.summary;
 
         // Update chat with summary
@@ -268,9 +278,11 @@ export default function EditorPage() {
           },
         ]);
 
-        // Set the AI suggestion content and show the diff view
-        setAiSuggestion(aiResponseContent);
-        setShowDiff(true);
+        if (aiResponseContent !== "") {
+          // Set the AI suggestion content and show the diff view
+          setAiSuggestion(aiResponseContent);
+          setShowDiff(true);
+        }
       }
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
@@ -373,7 +385,7 @@ export default function EditorPage() {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [documentContent, documentTitle]);
+  }, [documentContent, documentTitle, activeFileId]);
 
   // Add this useEffect after the other useEffect hooks:
   // Warn user about unsaved changes when leaving the page
@@ -395,13 +407,7 @@ export default function EditorPage() {
   }, [saveStatus]);
 
   return (
-    <div className="flex flex-col h-screen">
-      <EditorHeader
-        documentTitle={documentTitle}
-        onDocumentTitleChange={setDocumentTitle}
-        saveStatus={saveStatus}
-      />
-
+    <>
       <ApiKeyErrorDisplay apiKeyError={apiKeyError} />
 
       <div className="flex flex-1 overflow-hidden">
@@ -412,12 +418,14 @@ export default function EditorPage() {
           maxWidth={400}
           side="left"
         >
-          <ProjectSidebar
-            items={projectItems}
-            activeFileId={activeFileId}
-            onFileSelect={handleFileSelect}
-            onUpdateItems={setProjectItems}
-          />
+          <DndProvider backend={HTML5Backend}>
+            <ProjectSidebar
+              items={projectItems}
+              activeFileId={activeFileId}
+              onFileSelect={handleFileSelect}
+              onUpdateItems={setProjectItems}
+            />
+          </DndProvider>
         </ResizablePanel>
 
         <EditorContentArea
@@ -439,7 +447,7 @@ export default function EditorPage() {
         >
           <div className="h-full flex flex-col overflow-hidden border-l">
             <Tabs defaultValue="chat">
-              <TabsList className="w-full justify-start px-2 pt-2">
+              <TabsList className="w-full justify-start h-[37px] rounded-none">
                 <TabsTrigger value="chat" className="flex items-center gap-1">
                   <MessageSquare className="h-4 w-4" />
                   AI Chat
@@ -477,6 +485,9 @@ export default function EditorPage() {
           </div>
         </ResizablePanel>
       </div>
-    </div>
+
+      {/* Floating save indicator */}
+      <SaveIndicator saveStatus={saveStatus} />
+    </>
   );
 }
