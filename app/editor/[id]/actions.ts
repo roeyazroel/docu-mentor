@@ -10,6 +10,7 @@ import { z } from "zod";
 const AiResponseSchema = z.object({
   content: z
     .string()
+    .optional()
     .describe("The full text with all suggested changes applied"),
   summary: z
     .string()
@@ -31,7 +32,11 @@ export type AiResponseType = z.infer<typeof AiResponseSchema>;
  * @throws {Error} If the AI generation fails.
  */
 export async function generateAiResponse(
-  prompt: string,
+  messages: {
+    id: string;
+    role: "user" | "assistant";
+    content: string;
+  }[],
   documentContent: string
 ): Promise<AiResponseType> {
   const systemPrompt = `You are an AI writing assistant helping with document creation and editing.
@@ -40,8 +45,16 @@ Provide helpful responses. When suggesting improvements to text, focus on:
 2. Grammar and style
 3. Structure and organization
 4. Tone consistency
-5. Always return the full text (with the suggested changes applied), not just a partial text.
-6. Always return the text in markdown style without the "markdown" prefix.
+
+You have two main functions:
+- Answering questions about the document or writing in general
+- Making changes to the document content
+
+Response guidelines:
+1. If the user asks you to make changes to the text, return the full modified content in the 'content' field.
+2. If the user asks a question without requesting changes, return an empty string in the 'content' field.
+3. Always provide your answer or explanation in the 'summary' field.
+4. Return text in markdown style without the "markdown" prefix.
 
 The current document content is:
 """
@@ -49,15 +62,15 @@ ${documentContent || "[Empty document]"}
 """
 
 IMPORTANT: Return your response in two parts:
-1. The 'content' field should contain the complete text with your suggested changes applied.
-2. The 'summary' field should contain a brief explanation of what changes you made and why.
+1. The 'content' field should contain ONLY the complete text with your suggested changes applied, or an empty string if no changes were requested.
+2. The 'summary' field should contain either an explanation of what changes you made or the answer to the user's question.
 
 Do not include phrases like "Here's the revised text" or "I hope this helps" in either field.`;
 
   try {
     const { object } = await generateObject({
       model: await openaiClient("gpt-4o"),
-      prompt: prompt,
+      messages: messages,
       system: systemPrompt,
       schema: AiResponseSchema,
     });
