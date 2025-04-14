@@ -17,7 +17,7 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { generateAiResponse } from "../actions";
+import { generateAiResponse } from "./actions";
 
 // Mock initial project structure with storage providers
 const initialProject: ProjectItem[] = [

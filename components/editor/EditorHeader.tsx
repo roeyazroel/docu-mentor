@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { useEditorContext } from "@/context/EditorContext";
+import { UserButton, useUser } from "@clerk/nextjs";
 import {
   ChevronDown,
   FileText,
@@ -19,10 +20,16 @@ import {
 import React from "react";
 
 export const EditorHeader: React.FC = () => {
+  const { user } = useUser();
+
+  if (!user) {
+    return null;
+  }
+
   const { documentTitle, setDocumentTitle } = useEditorContext();
 
   return (
-    <header className="border-b pl-1 pr-1 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
+    <header className="border-b pl-4 pr-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
       <div className="flex h-16 items-center px-0 w-full">
         <div className="flex items-center gap-2 mr-6">
           <FileText className="h-5 w-5 text-primary" />
@@ -79,6 +86,7 @@ export const EditorHeader: React.FC = () => {
           </Button>
 
           <ModeToggle />
+          <UserButton signInUrl="/sign-in" />
         </div>
       </div>
     </header>

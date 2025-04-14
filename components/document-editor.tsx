@@ -109,7 +109,12 @@ export default function DocumentEditor({
 
   // Guard until the editor is initialized with content/default
   if (!isInitialized) {
-    return <div>Loading editor...</div>; // Or a skeleton loader
+    <div className="flex items-center justify-center h-64 w-full">
+      <div className="flex flex-col items-center space-y-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <p className="text-sm text-muted-foreground">Initializing editor...</p>
+      </div>
+    </div>;
   }
 
   return (
