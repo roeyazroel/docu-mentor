@@ -6,7 +6,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProjectSidebarDialogs } from "@/hooks/useProjectSidebarDialogs";
 import { useProjectSidebarRename } from "@/hooks/useProjectSidebarRename";
 import { useSidebarDragAndDrop } from "@/hooks/useSidebarDragAndDrop";
-import { OrganizationSwitcher } from "@clerk/nextjs";
 import { Cloud, FilePlus, FolderPlus, HardDrive, LogIn } from "lucide-react";
 import { useState } from "react";
 import { ProjectSidebarDialogs } from "./ProjectSidebarDialogs";
@@ -288,20 +287,6 @@ export default function ProjectSidebar({
         connectingProvider={dialogs.connectingProvider}
         completeConnection={completeConnection}
       />
-      <div className="p-3 border-t flex justify-center">
-        <OrganizationSwitcher
-          afterCreateOrganizationUrl={"/editor"}
-          afterLeaveOrganizationUrl={"/editor"}
-          afterSelectOrganizationUrl={"/editor"}
-          appearance={{
-            elements: {
-              rootBox: "w-full",
-              organizationSwitcherTrigger:
-                "w-full py-2 flex justify-between items-center rounded-md bg-muted/50 hover:bg-muted transition-colors",
-            },
-          }}
-        />
-      </div>
     </div>
   );
 }
