@@ -20,6 +20,7 @@ import {
   sortItems,
   toggleFolder as toggleFolderUtil,
 } from "./ProjectSidebarUtils";
+import { OrganizationSwitcher } from "@clerk/nextjs";
 
 export default function ProjectSidebar({
   items,
@@ -287,6 +288,20 @@ export default function ProjectSidebar({
         connectingProvider={dialogs.connectingProvider}
         completeConnection={completeConnection}
       />
+      <div className="p-3 border-t flex justify-center">
+        <OrganizationSwitcher
+          afterCreateOrganizationUrl={"/editor"}
+          afterLeaveOrganizationUrl={"/editor"}
+          afterSelectOrganizationUrl={"/editor"}
+          appearance={{
+            elements: {
+              rootBox: "w-full",
+              organizationSwitcherTrigger:
+                "w-full py-2 flex justify-between items-center rounded-md bg-muted/50 hover:bg-muted transition-colors",
+            },
+          }}
+        />
+      </div>
     </div>
   );
 }
