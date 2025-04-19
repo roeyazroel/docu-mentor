@@ -63,12 +63,26 @@ export function findParentById(
 
 /**
  * Sorts items by type (folders first) and name (alphabetically, case-insensitive).
+ * Also recursively sorts the children of folders.
  */
 export function sortItems(items: ProjectItem[]): ProjectItem[] {
-  return [...items].sort((a, b) => {
-    if (a.type !== b.type) {
-      return a.type === "folder" ? -1 : 1;
-    }
-    return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-  });
+  return [...items]
+    .sort((a, b) => {
+      // First sort by type (folders first)
+      if (a.type !== b.type) {
+        return a.type === "folder" ? -1 : 1;
+      }
+      // Then sort by name (alphabetically, case-insensitive)
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    })
+    .map((item) => {
+      // Recursively sort children of folders
+      if (item.type === "folder" && item.children.length > 0) {
+        return {
+          ...item,
+          children: sortItems(item.children),
+        };
+      }
+      return item;
+    });
 }

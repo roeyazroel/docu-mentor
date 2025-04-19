@@ -1,9 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useInlineDiff } from "@/hooks/useInlineDiff";
-import { Check, X } from "lucide-react";
 import { InlineDiffRenderer } from "./diff/InlineDiffRenderer";
 
 interface AiSuggestionDiffProps {

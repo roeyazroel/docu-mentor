@@ -43,4 +43,6 @@ export interface ProjectSidebarProps {
   activeFileId: string | null;
   onFileSelect: (fileId: string) => void;
   onUpdateItems: (items: ProjectItem[]) => void;
+  onDeleteFile: (fileId: string) => void;
+  onDeleteFolder: (folderId: string) => void;
 }

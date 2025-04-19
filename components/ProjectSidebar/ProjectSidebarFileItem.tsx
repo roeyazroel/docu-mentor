@@ -65,21 +65,35 @@ export function ProjectSidebarFileItem({
   const providerInfo = getProviderIcon(item.provider);
   const isDragOver = dragOverItemId === item.id;
   const isDragging = draggedItem && draggedItem.id === item.id;
+  const isDropNotAllowed = draggedItem && draggedItem.type === "folder";
 
   return (
     <div
       style={{ paddingLeft: `${depth * 12}px` }}
       className={isDragging ? "opacity-50" : undefined}
     >
-      <ProjectSidebarContextMenu>
+      <ProjectSidebarContextMenu
+        itemId={item.id}
+        itemName={item.name}
+        itemType="file"
+        onStartRenaming={onStartRenaming}
+        onDeleteItem={onDeleteItem}
+      >
         <div
           className={`flex items-center py-1 px-2 text-sm rounded-md ${
             isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
-          } ${isDragOver ? "border-t-2 border-primary" : ""}`}
+          } ${isDragOver ? "border-t-2 border-primary" : ""} ${
+            isDropNotAllowed ? "cursor-not-allowed" : ""
+          }`}
           onClick={() => onFileSelect(item.id)}
           draggable
           onDragStart={(e) => onDragStart(e, item)}
-          onDragOver={(e) => onDragOver(e, item)}
+          onDragOver={(e) => {
+            if (draggedItem && draggedItem.type === "folder") {
+              e.dataTransfer.dropEffect = "none";
+            }
+            onDragOver(e, item);
+          }}
           onDragLeave={onDragLeave}
           onDrop={(e) => onDrop(e, item)}
         >

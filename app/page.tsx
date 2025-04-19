@@ -1,31 +1,49 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import {
   ArrowRight,
-  FileText,
-  Users,
-  Sparkles,
   Check,
-  Star,
-  Zap,
-  Shield,
-  MessageSquare,
-  Mail,
   ChevronRight,
+  FileText,
   Github,
-  Twitter,
   Linkedin,
-} from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useUser, useClerk } from "@clerk/nextjs";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+  Mail,
+  MessageSquare,
+  Shield,
+  Sparkles,
+  Star,
+  Twitter,
+  Users,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -45,19 +63,34 @@ export default function Home() {
             <span className="text-xl font-bold">DocuMentor</span>
           </div>
           <nav className="hidden md:flex gap-6">
-            <Link href="#features" className="text-sm font-medium hover:underline underline-offset-4">
+            <Link
+              href="#features"
+              className="text-sm font-medium hover:underline underline-offset-4"
+            >
               Features
             </Link>
-            <Link href="#pricing" className="text-sm font-medium hover:underline underline-offset-4">
+            <Link
+              href="#pricing"
+              className="text-sm font-medium hover:underline underline-offset-4"
+            >
               Pricing
             </Link>
-            <Link href="#testimonials" className="text-sm font-medium hover:underline underline-offset-4">
+            <Link
+              href="#testimonials"
+              className="text-sm font-medium hover:underline underline-offset-4"
+            >
               Testimonials
             </Link>
-            <Link href="#about" className="text-sm font-medium hover:underline underline-offset-4">
+            <Link
+              href="#about"
+              className="text-sm font-medium hover:underline underline-offset-4"
+            >
               About
             </Link>
-            <Link href="#faq" className="text-sm font-medium hover:underline underline-offset-4">
+            <Link
+              href="#faq"
+              className="text-sm font-medium hover:underline underline-offset-4"
+            >
               FAQ
             </Link>
           </nav>
@@ -66,8 +99,17 @@ export default function Home() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Avatar className="h-9 w-9 cursor-pointer">
-                    <AvatarImage src={user.imageUrl} alt={user.fullName || user.emailAddresses?.[0]?.emailAddress || "User"} />
-                    <AvatarFallback>{user.firstName?.[0] || "U"}</AvatarFallback>
+                    <AvatarImage
+                      src={user.imageUrl}
+                      alt={
+                        user.fullName ||
+                        user.emailAddresses?.[0]?.emailAddress ||
+                        "User"
+                      }
+                    />
+                    <AvatarFallback>
+                      {user.firstName?.[0] || "U"}
+                    </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -110,15 +152,16 @@ export default function Home() {
                     AI-Powered Document Editor
                   </Badge>
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                    Transform Your <span className="text-primary">Writing</span> with AI
+                    Transform Your <span className="text-primary">Writing</span>{" "}
+                    with AI
                   </h1>
                   <p className="max-w-[600px] text-gray-500 md:text-xl dark:text-gray-400">
-                    DocuMentor combines collaborative editing with AI assistance to help you create better documents
-                    faster.
+                    DocuMentor combines collaborative editing with AI assistance
+                    to help you create better documents faster.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Link href="/editor/new">
+                  <Link href="/editor">
                     <Button size="lg" className="gap-1.5">
                       Try for Free <ArrowRight className="h-4 w-4" />
                     </Button>
@@ -149,7 +192,9 @@ export default function Home() {
                         <div className="h-2 w-2 rounded-full bg-yellow-500" />
                         <div className="h-2 w-2 rounded-full bg-green-500" />
                       </div>
-                      <div className="text-xs font-medium">DocuMentor Editor</div>
+                      <div className="text-xs font-medium">
+                        DocuMentor Editor
+                      </div>
                       <div className="w-16" />
                     </div>
                     <div className="p-4 space-y-4">
@@ -187,26 +232,44 @@ export default function Home() {
 
             {/* Trusted by section */}
             <div className="mt-16 border-t pt-8">
-              <p className="text-center text-sm text-muted-foreground mb-6">TRUSTED BY INNOVATIVE TEAMS</p>
+              <p className="text-center text-sm text-muted-foreground mb-6">
+                TRUSTED BY INNOVATIVE TEAMS
+              </p>
               <div className="flex flex-wrap justify-center gap-8 md:gap-12 lg:gap-16 opacity-70">
                 <div className="flex items-center justify-center">
-                  <svg className="h-6 w-auto" viewBox="0 0 124 24" fill="currentColor">
+                  <svg
+                    className="h-6 w-auto"
+                    viewBox="0 0 124 24"
+                    fill="currentColor"
+                  >
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4a8 8 0 110 16 8 8 0 010-16z" />
                     <path d="M36 4h4v16h-4zM44 4h8a8 8 0 110 16h-8V4zm4 4v8h4a4 4 0 100-8h-4zM64 4h12v4h-8v2h8v4h-8v2h8v4H64zM84 4h4v8h8v-8h4v16h-4v-4h-8v4h-4z" />
                   </svg>
                 </div>
                 <div className="flex items-center justify-center">
-                  <svg className="h-5 w-auto" viewBox="0 0 124 24" fill="currentColor">
+                  <svg
+                    className="h-5 w-auto"
+                    viewBox="0 0 124 24"
+                    fill="currentColor"
+                  >
                     <path d="M0 4h4v16H0zM8 4h4v4h4v4h-4v8H8zM20 4h4v16h-4zM28 4h12v4h-8v2h8v4h-8v2h8v4H28zM44 4h4v16h-4zM52 4h12v4h-8v2h8v4h-8v2h8v4H52zM68 4h4v16h-4zM76 4h12v4h-8v2h8v4h-8v2h8v4H76z" />
                   </svg>
                 </div>
                 <div className="flex items-center justify-center">
-                  <svg className="h-6 w-auto" viewBox="0 0 124 24" fill="currentColor">
+                  <svg
+                    className="h-6 w-auto"
+                    viewBox="0 0 124 24"
+                    fill="currentColor"
+                  >
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4a8 8 0 110 16 8 8 0 010-16zM32 4h12v4h-8v2h8v4h-8v2h8v4H32zM48 4h4v16h-4zM56 4h12v4h-8v2h8v4h-8v2h8v4H56zM72 4h12v4h-4v12h-4V8h-4zM88 4h12a4 4 0 014 4v8a4 4 0 01-4 4H88V4zm4 4v8h8V8h-8z" />
                   </svg>
                 </div>
                 <div className="flex items-center justify-center">
-                  <svg className="h-5 w-auto" viewBox="0 0 124 24" fill="currentColor">
+                  <svg
+                    className="h-5 w-auto"
+                    viewBox="0 0 124 24"
+                    fill="currentColor"
+                  >
                     <path d="M0 4h12a4 4 0 014 4v8a4 4 0 01-4 4H0V4zm4 4v8h8V8H4zM20 4h4v16h-4zM28 4h12v4h-8v2h8v4h-8v2h8v4H28zM44 4h4v16h-4zM52 4h12v4h-8v2h8v4h-8v2h8v4H52zM68 4h4v16h-4zM76 4h12a4 4 0 014 4v8a4 4 0 01-4 4H76V4zm4 4v8h8V8h-8z" />
                   </svg>
                 </div>
@@ -227,9 +290,12 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <Badge className="px-3 py-1">Features</Badge>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Powerful AI-Assisted Editing</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  Powerful AI-Assisted Editing
+                </h2>
                 <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                  DocuMentor combines the power of AI with collaborative editing to transform your writing process.
+                  DocuMentor combines the power of AI with collaborative editing
+                  to transform your writing process.
                 </p>
               </div>
             </div>
@@ -240,7 +306,8 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-bold">AI-Powered Assistance</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Generate content, refactor text, and get context-aware suggestions.
+                  Generate content, refactor text, and get context-aware
+                  suggestions.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-2 text-center">
@@ -258,7 +325,8 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-bold">Smart Document Management</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Track changes, manage versions, and export in multiple formats.
+                  Track changes, manage versions, and export in multiple
+                  formats.
                 </p>
               </div>
             </div>
@@ -274,34 +342,48 @@ export default function Home() {
                 <TabsContent value="writing" className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-8 items-center">
                     <div className="space-y-4">
-                      <h3 className="text-2xl font-bold">AI-Powered Writing Assistant</h3>
+                      <h3 className="text-2xl font-bold">
+                        AI-Powered Writing Assistant
+                      </h3>
                       <p className="text-gray-500 dark:text-gray-400">
-                        Our advanced AI helps you write better content by providing suggestions, improving grammar, and
-                        enhancing your writing style.
+                        Our advanced AI helps you write better content by
+                        providing suggestions, improving grammar, and enhancing
+                        your writing style.
                       </p>
                       <ul className="space-y-2">
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>Smart content suggestions based on your document context</span>
+                          <span>
+                            Smart content suggestions based on your document
+                            context
+                          </span>
                         </li>
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>Grammar and style improvements as you write</span>
+                          <span>
+                            Grammar and style improvements as you write
+                          </span>
                         </li>
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>Tone adjustment for different document types</span>
+                          <span>
+                            Tone adjustment for different document types
+                          </span>
                         </li>
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>Automatic summarization and key point extraction</span>
+                          <span>
+                            Automatic summarization and key point extraction
+                          </span>
                         </li>
                       </ul>
                     </div>
                     <div className="rounded-lg border bg-background p-2 shadow-lg">
                       <div className="rounded-md overflow-hidden">
                         <div className="bg-muted/50 px-4 py-2 border-b">
-                          <div className="text-xs font-medium">AI Writing Assistant</div>
+                          <div className="text-xs font-medium">
+                            AI Writing Assistant
+                          </div>
                         </div>
                         <div className="p-4 space-y-4 bg-card">
                           <div className="flex items-start gap-3">
@@ -310,17 +392,21 @@ export default function Home() {
                             </div>
                             <div className="flex-1 space-y-2">
                               <p className="text-sm">
-                                I've analyzed your document and have some suggestions to improve clarity:
+                                I've analyzed your document and have some
+                                suggestions to improve clarity:
                               </p>
                               <div className="bg-muted/30 p-3 rounded-md text-sm">
                                 <p className="text-green-600 dark:text-green-400">
-                                  + Consider restructuring the introduction to highlight key benefits
+                                  + Consider restructuring the introduction to
+                                  highlight key benefits
                                 </p>
                                 <p className="text-red-600 dark:text-red-400">
-                                  - Remove redundant information in the third paragraph
+                                  - Remove redundant information in the third
+                                  paragraph
                                 </p>
                                 <p className="text-blue-600 dark:text-blue-400">
-                                  ~ Adjust tone to be more conversational throughout
+                                  ~ Adjust tone to be more conversational
+                                  throughout
                                 </p>
                               </div>
                             </div>
@@ -333,15 +419,20 @@ export default function Home() {
                 <TabsContent value="collaboration" className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-8 items-center">
                     <div className="space-y-4">
-                      <h3 className="text-2xl font-bold">Seamless Team Collaboration</h3>
+                      <h3 className="text-2xl font-bold">
+                        Seamless Team Collaboration
+                      </h3>
                       <p className="text-gray-500 dark:text-gray-400">
-                        Work together with your team in real-time, with intuitive tools for commenting, suggesting, and
-                        tracking changes.
+                        Work together with your team in real-time, with
+                        intuitive tools for commenting, suggesting, and tracking
+                        changes.
                       </p>
                       <ul className="space-y-2">
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>Real-time collaborative editing with multiple users</span>
+                          <span>
+                            Real-time collaborative editing with multiple users
+                          </span>
                         </li>
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -349,18 +440,24 @@ export default function Home() {
                         </li>
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>Suggestion mode with accept/reject functionality</span>
+                          <span>
+                            Suggestion mode with accept/reject functionality
+                          </span>
                         </li>
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>User presence indicators and activity tracking</span>
+                          <span>
+                            User presence indicators and activity tracking
+                          </span>
                         </li>
                       </ul>
                     </div>
                     <div className="rounded-lg border bg-background p-2 shadow-lg">
                       <div className="rounded-md overflow-hidden">
                         <div className="bg-muted/50 px-4 py-2 border-b">
-                          <div className="text-xs font-medium">Team Collaboration</div>
+                          <div className="text-xs font-medium">
+                            Team Collaboration
+                          </div>
                         </div>
                         <div className="p-4 space-y-4 bg-card">
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -383,8 +480,13 @@ export default function Home() {
                             <div className="h-3 w-3/4 rounded bg-muted" />
                           </div>
                           <div className="border-l-2 border-blue-500 pl-3 py-1 text-sm">
-                            <div className="font-medium text-blue-600 dark:text-blue-400">Sarah K.</div>
-                            <p className="text-xs">I think we should expand on this section with more details.</p>
+                            <div className="font-medium text-blue-600 dark:text-blue-400">
+                              Sarah K.
+                            </div>
+                            <p className="text-xs">
+                              I think we should expand on this section with more
+                              details.
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -394,22 +496,31 @@ export default function Home() {
                 <TabsContent value="management" className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-8 items-center">
                     <div className="space-y-4">
-                      <h3 className="text-2xl font-bold">Intelligent Document Management</h3>
+                      <h3 className="text-2xl font-bold">
+                        Intelligent Document Management
+                      </h3>
                       <p className="text-gray-500 dark:text-gray-400">
-                        Organize, track, and manage all your documents with powerful tools designed for teams.
+                        Organize, track, and manage all your documents with
+                        powerful tools designed for teams.
                       </p>
                       <ul className="space-y-2">
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>Version history with detailed change tracking</span>
+                          <span>
+                            Version history with detailed change tracking
+                          </span>
                         </li>
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>Smart document organization with folders and tags</span>
+                          <span>
+                            Smart document organization with folders and tags
+                          </span>
                         </li>
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>Export to multiple formats (PDF, Word, Markdown)</span>
+                          <span>
+                            Export to multiple formats (PDF, Word, Markdown)
+                          </span>
                         </li>
                         <li className="flex items-start gap-2">
                           <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -420,13 +531,17 @@ export default function Home() {
                     <div className="rounded-lg border bg-background p-2 shadow-lg">
                       <div className="rounded-md overflow-hidden">
                         <div className="bg-muted/50 px-4 py-2 border-b">
-                          <div className="text-xs font-medium">Document Management</div>
+                          <div className="text-xs font-medium">
+                            Document Management
+                          </div>
                         </div>
                         <div className="p-4 space-y-4 bg-card">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <FileText className="h-4 w-4 text-primary" />
-                              <span className="text-sm font-medium">Project Proposal.md</span>
+                              <span className="text-sm font-medium">
+                                Project Proposal.md
+                              </span>
                             </div>
                             <Badge variant="outline" className="text-xs">
                               12 versions
@@ -440,7 +555,9 @@ export default function Home() {
                                 </div>
                                 <span>Updated introduction</span>
                               </div>
-                              <span className="text-muted-foreground">2 hours ago</span>
+                              <span className="text-muted-foreground">
+                                2 hours ago
+                              </span>
                             </div>
                             <div className="flex items-center justify-between py-1 border-b">
                               <div className="flex items-center gap-2">
@@ -449,7 +566,9 @@ export default function Home() {
                                 </div>
                                 <span>Added budget section</span>
                               </div>
-                              <span className="text-muted-foreground">Yesterday</span>
+                              <span className="text-muted-foreground">
+                                Yesterday
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -463,12 +582,17 @@ export default function Home() {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900">
+        <section
+          id="pricing"
+          className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900"
+        >
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <Badge className="px-3 py-1">Pricing</Badge>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Choose Your Plan</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  Choose Your Plan
+                </h2>
                 <p className="max-w-[600px] text-gray-500 md:text-xl/relaxed dark:text-gray-400">
                   Simple, transparent pricing that scales with your needs.
                 </p>
@@ -480,11 +604,15 @@ export default function Home() {
               <Card className="flex flex-col">
                 <CardHeader>
                   <CardTitle>Free</CardTitle>
-                  <CardDescription>For individuals just getting started</CardDescription>
+                  <CardDescription>
+                    For individuals just getting started
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="text-4xl font-bold mb-2">$0</div>
-                  <p className="text-sm text-muted-foreground mb-6">Forever free</p>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Forever free
+                  </p>
                   <ul className="space-y-2 mb-6">
                     <li className="flex items-start gap-2">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -516,15 +644,21 @@ export default function Home() {
               {/* Pro Plan */}
               <Card className="flex flex-col relative border-primary">
                 <div className="absolute top-0 right-0 transform translate-x-2 -translate-y-2">
-                  <Badge className="bg-primary text-primary-foreground">Popular</Badge>
+                  <Badge className="bg-primary text-primary-foreground">
+                    Popular
+                  </Badge>
                 </div>
                 <CardHeader>
                   <CardTitle>Pro</CardTitle>
-                  <CardDescription>For professionals and small teams</CardDescription>
+                  <CardDescription>
+                    For professionals and small teams
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="text-4xl font-bold mb-2">$12</div>
-                  <p className="text-sm text-muted-foreground mb-6">Per user / month</p>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Per user / month
+                  </p>
                   <ul className="space-y-2 mb-6">
                     <li className="flex items-start gap-2">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -563,11 +697,15 @@ export default function Home() {
               <Card className="flex flex-col">
                 <CardHeader>
                   <CardTitle>Enterprise</CardTitle>
-                  <CardDescription>For organizations with advanced needs</CardDescription>
+                  <CardDescription>
+                    For organizations with advanced needs
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="text-4xl font-bold mb-2">$29</div>
-                  <p className="text-sm text-muted-foreground mb-6">Per user / month</p>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Per user / month
+                  </p>
                   <ul className="space-y-2 mb-6">
                     <li className="flex items-start gap-2">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -623,9 +761,12 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <Badge className="px-3 py-1">Testimonials</Badge>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What Our Users Say</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  What Our Users Say
+                </h2>
                 <p className="max-w-[600px] text-gray-500 md:text-xl/relaxed dark:text-gray-400">
-                  Don't just take our word for it. Here's what people are saying about DocuMentor.
+                  Don't just take our word for it. Here's what people are saying
+                  about DocuMentor.
                 </p>
               </div>
             </div>
@@ -644,8 +785,10 @@ export default function Home() {
                 </div>
                 <CardContent className="pt-12 pb-8">
                   <p className="mb-6 italic">
-                    "DocuMentor has completely transformed how our team collaborates on documents. The AI suggestions
-                    are incredibly helpful and have improved our writing quality significantly."
+                    "DocuMentor has completely transformed how our team
+                    collaborates on documents. The AI suggestions are incredibly
+                    helpful and have improved our writing quality
+                    significantly."
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -653,7 +796,9 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="font-medium">Jessica Davis</p>
-                      <p className="text-sm text-muted-foreground">Marketing Director, TechCorp</p>
+                      <p className="text-sm text-muted-foreground">
+                        Marketing Director, TechCorp
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -672,8 +817,10 @@ export default function Home() {
                 </div>
                 <CardContent className="pt-12 pb-8">
                   <p className="mb-6 italic">
-                    "As a content creator, I've tried many writing tools, but DocuMentor stands out. The real-time
-                    collaboration features combined with AI assistance make it the perfect tool for my team."
+                    "As a content creator, I've tried many writing tools, but
+                    DocuMentor stands out. The real-time collaboration features
+                    combined with AI assistance make it the perfect tool for my
+                    team."
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -681,7 +828,9 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="font-medium">Michael Rodriguez</p>
-                      <p className="text-sm text-muted-foreground">Content Lead, CreativeStudio</p>
+                      <p className="text-sm text-muted-foreground">
+                        Content Lead, CreativeStudio
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -700,8 +849,10 @@ export default function Home() {
                 </div>
                 <CardContent className="pt-12 pb-8">
                   <p className="mb-6 italic">
-                    "The document management features in DocuMentor have saved our team countless hours. Being able to
-                    track versions and collaborate in real-time has streamlined our entire workflow."
+                    "The document management features in DocuMentor have saved
+                    our team countless hours. Being able to track versions and
+                    collaborate in real-time has streamlined our entire
+                    workflow."
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -709,7 +860,9 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="font-medium">Sarah Lee</p>
-                      <p className="text-sm text-muted-foreground">Project Manager, InnovateCo</p>
+                      <p className="text-sm text-muted-foreground">
+                        Project Manager, InnovateCo
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -719,20 +872,28 @@ export default function Home() {
         </section>
 
         {/* About Section */}
-        <section id="about" className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900">
+        <section
+          id="about"
+          className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900"
+        >
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
               <div className="space-y-4">
                 <Badge className="px-3 py-1">About Us</Badge>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Our Mission</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                  Our Mission
+                </h2>
                 <p className="text-gray-500 md:text-xl dark:text-gray-400">
-                  At DocuMentor, we're on a mission to transform how people create and collaborate on documents. We
-                  believe that by combining the power of AI with intuitive collaboration tools, we can help teams
-                  produce better content faster.
+                  At DocuMentor, we're on a mission to transform how people
+                  create and collaborate on documents. We believe that by
+                  combining the power of AI with intuitive collaboration tools,
+                  we can help teams produce better content faster.
                 </p>
                 <p className="text-gray-500 md:text-xl dark:text-gray-400">
-                  Founded in 2023 by a team of AI researchers and document collaboration experts, DocuMentor has quickly
-                  grown to serve thousands of users worldwide, from individual writers to enterprise teams.
+                  Founded in 2023 by a team of AI researchers and document
+                  collaboration experts, DocuMentor has quickly grown to serve
+                  thousands of users worldwide, from individual writers to
+                  enterprise teams.
                 </p>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row pt-4">
                   <Link href="/about">
@@ -766,7 +927,9 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16">
               <div className="text-center">
                 <div className="text-4xl font-bold text-primary">10k+</div>
-                <p className="text-sm text-muted-foreground mt-1">Active Users</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Active Users
+                </p>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-primary">500+</div>
@@ -774,11 +937,15 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-primary">1M+</div>
-                <p className="text-sm text-muted-foreground mt-1">Documents Created</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Documents Created
+                </p>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-primary">99%</div>
-                <p className="text-sm text-muted-foreground mt-1">Customer Satisfaction</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Customer Satisfaction
+                </p>
               </div>
             </div>
           </div>
@@ -790,7 +957,9 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <Badge className="px-3 py-1">FAQ</Badge>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Frequently Asked Questions</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  Frequently Asked Questions
+                </h2>
                 <p className="max-w-[600px] text-gray-500 md:text-xl/relaxed dark:text-gray-400">
                   Find answers to common questions about DocuMentor.
                 </p>
@@ -800,54 +969,76 @@ export default function Home() {
             <div className="mx-auto max-w-3xl mt-8">
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
-                  <AccordionTrigger>How does the AI writing assistance work?</AccordionTrigger>
+                  <AccordionTrigger>
+                    How does the AI writing assistance work?
+                  </AccordionTrigger>
                   <AccordionContent>
-                    Our AI writing assistant analyzes your document in real-time and provides context-aware suggestions
-                    to improve clarity, grammar, and style. It can also help generate content based on your existing
-                    text, summarize sections, and more. The AI learns from your writing style over time to provide more
+                    Our AI writing assistant analyzes your document in real-time
+                    and provides context-aware suggestions to improve clarity,
+                    grammar, and style. It can also help generate content based
+                    on your existing text, summarize sections, and more. The AI
+                    learns from your writing style over time to provide more
                     personalized suggestions.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
-                  <AccordionTrigger>Can I collaborate with others in real-time?</AccordionTrigger>
+                  <AccordionTrigger>
+                    Can I collaborate with others in real-time?
+                  </AccordionTrigger>
                   <AccordionContent>
-                    Yes! DocuMentor is built for real-time collaboration. Multiple users can edit the same document
-                    simultaneously, with changes appearing instantly. You can see who's currently viewing the document,
-                    track their cursor position, and communicate through inline comments and our built-in chat feature.
+                    Yes! DocuMentor is built for real-time collaboration.
+                    Multiple users can edit the same document simultaneously,
+                    with changes appearing instantly. You can see who's
+                    currently viewing the document, track their cursor position,
+                    and communicate through inline comments and our built-in
+                    chat feature.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-3">
-                  <AccordionTrigger>What file formats can I import and export?</AccordionTrigger>
+                  <AccordionTrigger>
+                    What file formats can I import and export?
+                  </AccordionTrigger>
                   <AccordionContent>
-                    DocuMentor supports importing documents from various formats including .docx, .txt, .md, and .pdf.
-                    You can export your documents to PDF, Microsoft Word (.docx), Markdown (.md), HTML, and plain text
-                    formats. Enterprise plans include additional import/export options.
+                    DocuMentor supports importing documents from various formats
+                    including .docx, .txt, .md, and .pdf. You can export your
+                    documents to PDF, Microsoft Word (.docx), Markdown (.md),
+                    HTML, and plain text formats. Enterprise plans include
+                    additional import/export options.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-4">
                   <AccordionTrigger>Is my data secure?</AccordionTrigger>
                   <AccordionContent>
-                    Absolutely. We take security seriously at DocuMentor. All your documents are encrypted both in
-                    transit and at rest. We use industry-standard security practices and regular security audits to
-                    ensure your data remains protected. Enterprise plans include additional security features like SAML
-                    SSO and advanced permissions.
+                    Absolutely. We take security seriously at DocuMentor. All
+                    your documents are encrypted both in transit and at rest. We
+                    use industry-standard security practices and regular
+                    security audits to ensure your data remains protected.
+                    Enterprise plans include additional security features like
+                    SAML SSO and advanced permissions.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-5">
-                  <AccordionTrigger>Can I use DocuMentor offline?</AccordionTrigger>
+                  <AccordionTrigger>
+                    Can I use DocuMentor offline?
+                  </AccordionTrigger>
                   <AccordionContent>
-                    While DocuMentor is primarily a cloud-based solution, we do offer limited offline functionality. You
-                    can continue editing documents you've previously opened even without an internet connection, and
-                    changes will sync once you're back online. Full offline support is on our roadmap for future
+                    While DocuMentor is primarily a cloud-based solution, we do
+                    offer limited offline functionality. You can continue
+                    editing documents you've previously opened even without an
+                    internet connection, and changes will sync once you're back
+                    online. Full offline support is on our roadmap for future
                     updates.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-6">
-                  <AccordionTrigger>Do you offer a free trial?</AccordionTrigger>
+                  <AccordionTrigger>
+                    Do you offer a free trial?
+                  </AccordionTrigger>
                   <AccordionContent>
-                    Yes, all paid plans include a 14-day free trial with full access to all features. No credit card is
-                    required to start your trial. Additionally, we offer a free plan with limited features that you can
-                    use indefinitely.
+                    Yes, all paid plans include a 14-day free trial with full
+                    access to all features. No credit card is required to start
+                    your trial. Additionally, we offer a free plan with limited
+                    features that you can use indefinitely.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -864,7 +1055,8 @@ export default function Home() {
                   Ready to Transform Your Writing?
                 </h2>
                 <p className="max-w-[600px] md:text-xl/relaxed">
-                  Join thousands of users who are creating better documents with DocuMentor.
+                  Join thousands of users who are creating better documents with
+                  DocuMentor.
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -874,7 +1066,9 @@ export default function Home() {
                   </Button>
                 </Link>
               </div>
-              <p className="text-sm">No credit card required. 14-day free trial.</p>
+              <p className="text-sm">
+                No credit card required. 14-day free trial.
+              </p>
             </div>
           </div>
         </section>
@@ -884,13 +1078,20 @@ export default function Home() {
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
               <div className="space-y-4">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Stay Updated</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+                  Stay Updated
+                </h2>
                 <p className="text-gray-500 md:text-xl dark:text-gray-400">
-                  Subscribe to our newsletter for the latest updates, tips, and special offers.
+                  Subscribe to our newsletter for the latest updates, tips, and
+                  special offers.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <Input type="email" placeholder="Enter your email" className="sm:flex-1" />
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="sm:flex-1"
+                />
                 <Button>
                   <Mail className="h-4 w-4 mr-2" />
                   Subscribe
@@ -909,18 +1110,28 @@ export default function Home() {
                 <span className="text-xl font-bold">DocuMentor</span>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                AI-powered document editing and collaboration platform that helps teams create better content faster.
+                AI-powered document editing and collaboration platform that
+                helps teams create better content faster.
               </p>
               <div className="flex gap-4">
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
+                <Link
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground"
+                >
                   <Twitter className="h-5 w-5" />
                   <span className="sr-only">Twitter</span>
                 </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
+                <Link
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground"
+                >
                   <Github className="h-5 w-5" />
                   <span className="sr-only">GitHub</span>
                 </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
+                <Link
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground"
+                >
                   <Linkedin className="h-5 w-5" />
                   <span className="sr-only">LinkedIn</span>
                 </Link>
@@ -930,27 +1141,42 @@ export default function Home() {
               <h3 className="font-medium mb-4">Product</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="#features" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="#features"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Features
                   </Link>
                 </li>
                 <li>
-                  <Link href="#pricing" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="#pricing"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Pricing
                   </Link>
                 </li>
                 <li>
-                  <Link href="/changelog" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/changelog"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Changelog
                   </Link>
                 </li>
                 <li>
-                  <Link href="/roadmap" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/roadmap"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Roadmap
                   </Link>
                 </li>
                 <li>
-                  <Link href="/integrations" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/integrations"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Integrations
                   </Link>
                 </li>
@@ -960,27 +1186,42 @@ export default function Home() {
               <h3 className="font-medium mb-4">Company</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/about" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/about"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     About
                   </Link>
                 </li>
                 <li>
-                  <Link href="/blog" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/blog"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Blog
                   </Link>
                 </li>
                 <li>
-                  <Link href="/careers" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/careers"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Careers
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/contact"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Contact
                   </Link>
                 </li>
                 <li>
-                  <Link href="/press" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/press"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Press
                   </Link>
                 </li>
@@ -990,27 +1231,42 @@ export default function Home() {
               <h3 className="font-medium mb-4">Resources</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/documentation" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/documentation"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Documentation
                   </Link>
                 </li>
                 <li>
-                  <Link href="/help" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/help"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Help Center
                   </Link>
                 </li>
                 <li>
-                  <Link href="/guides" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/guides"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Guides
                   </Link>
                 </li>
                 <li>
-                  <Link href="/api" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/api"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     API
                   </Link>
                 </li>
                 <li>
-                  <Link href="/community" className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href="/community"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     Community
                   </Link>
                 </li>
@@ -1018,15 +1274,26 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">© 2025 DocuMentor. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              © 2025 DocuMentor. All rights reserved.
+            </p>
             <div className="flex gap-4 text-sm">
-              <Link href="/terms" className="text-muted-foreground hover:text-foreground">
+              <Link
+                href="/terms"
+                className="text-muted-foreground hover:text-foreground"
+              >
                 Terms
               </Link>
-              <Link href="/privacy" className="text-muted-foreground hover:text-foreground">
+              <Link
+                href="/privacy"
+                className="text-muted-foreground hover:text-foreground"
+              >
                 Privacy
               </Link>
-              <Link href="/cookies" className="text-muted-foreground hover:text-foreground">
+              <Link
+                href="/cookies"
+                className="text-muted-foreground hover:text-foreground"
+              >
                 Cookies
               </Link>
             </div>
@@ -1034,5 +1301,5 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

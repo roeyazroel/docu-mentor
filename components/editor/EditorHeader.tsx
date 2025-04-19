@@ -6,8 +6,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { useEditorContext } from "@/context/EditorContext";
 import { UserButton, useUser } from "@clerk/nextjs";
 import {
   ChevronDown,
@@ -26,16 +24,14 @@ export const EditorHeader: React.FC = () => {
     return null;
   }
 
-  const { documentTitle, setDocumentTitle } = useEditorContext();
-
   return (
     <header className="border-b pl-4 pr-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
-      <div className="flex h-16 items-center px-0 w-full">
+      <div className="flex h-16 items-center px-0 w-full justify-between">
         <div className="flex items-center gap-2 mr-6">
           <FileText className="h-5 w-5 text-primary" />
           <span className="font-bold text-lg">DocuMentor</span>
         </div>
-        <div className="flex-1 flex items-center">
+        {/* <div className="flex-1 flex items-center">
           <Input
             value={documentTitle}
             onChange={(e) => setDocumentTitle(e.target.value)}
@@ -43,7 +39,7 @@ export const EditorHeader: React.FC = () => {
             aria-label="Document Title"
             placeholder="Untitled Document"
           />
-        </div>
+        </div> */}
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"

@@ -3,8 +3,10 @@ import type { NextRequest } from 'next/server';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 
 export async function POST(req: NextRequest) {
+  await auth.protect();
   const {
     apiKey: key,
     model = 'gpt-4o-mini',

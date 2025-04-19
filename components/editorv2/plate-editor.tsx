@@ -24,7 +24,7 @@ export function PlateEditor({ content, onChange }: PlateEditorProps) {
   const editor = useCreateEditor();
   // State for initialization tracking
   const [isInitialized, setIsInitialized] = useState(false);
-
+  const [isFocused, setIsFocused] = useState(false);
   // Effect for deserializing content or handling external updates
   useEffect(() => {
     // Cast editor.api to include markdown methods
@@ -114,14 +114,15 @@ export function PlateEditor({ content, onChange }: PlateEditorProps) {
   return (
     <DndProvider backend={HTML5Backend}>
       {/* Pass the change handler to Plate */}
-      <Plate editor={editor} onChange={handlePlateChange}>
+      <Plate editor={editor} onChange={handlePlateChange} >
         <EditorContainer>
           {/* Added className and style for basic sizing like in DocumentEditor */}
           <Editor
+            onFocus={() => setIsFocused(true)}
             variant="default"
             className="p-4 flex-1 overflow-y-auto"
             style={{ minHeight: "400px" }}
-            placeholder="Start writing..." // Add placeholder
+            placeholder={!isFocused ? "Start writing..." : ""}
           />
         </EditorContainer>
 

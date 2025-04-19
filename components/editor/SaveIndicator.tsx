@@ -49,7 +49,7 @@ export const SaveIndicator: React.FC<SaveIndicatorProps> = ({ saveStatus }) => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 right-[350px] z-50">
       <Badge
         variant="outline"
         className={`shadow-sm ${getBadgeClasses(saveStatus)}`}

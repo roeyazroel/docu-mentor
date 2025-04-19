@@ -19,6 +19,8 @@ interface EditorContentAreaProps {
   onRejectAll: () => void;
   /** Callback function to finalize partially accepted changes and exit diff view */
   onFinalizeChanges: () => void;
+  /** The currently active file ID */
+  activeFileId: string | null;
 }
 
 /**
@@ -33,10 +35,18 @@ export const EditorContentArea: React.FC<EditorContentAreaProps> = ({
   onAcceptAll,
   onRejectAll,
   onFinalizeChanges,
+  activeFileId,
 }) => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {showDiff ? (
+      {!activeFileId ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-muted-foreground text-center p-4">
+            <h3 className="font-medium mb-2">No Document Selected</h3>
+            <p>Select a file from the sidebar to start editing</p>
+          </div>
+        </div>
+      ) : showDiff ? (
         <div className="flex-1 overflow-auto p-4">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center">

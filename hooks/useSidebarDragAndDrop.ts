@@ -6,11 +6,22 @@ import { useState } from "react";
 
 /**
  * Hook for managing drag-and-drop state and logic for the project sidebar.
+ *
+ * Rules for drag and drop:
+ * - Files can be dragged onto folders
+ * - Folders can be dragged onto other folders
+ * - Folders CANNOT be dragged onto files
+ * - Folders cannot be dragged into their own child folders
  */
 export function useSidebarDragAndDrop(
   items: ProjectItem[],
   onUpdateItems: (items: ProjectItem[]) => void,
-  findParentById: (id: string, items: ProjectItem[]) => ProjectItem | null
+  findParentById: (id: string, items: ProjectItem[]) => ProjectItem | null,
+  onUpdateItemParent?: (
+    itemId: string,
+    parentId: string | null,
+    itemType: "file" | "folder"
+  ) => void
 ) {
   // Drag-and-drop state
   const [draggedItem, setDraggedItem] = useState<ProjectItem | null>(null);
@@ -40,6 +51,13 @@ export function useSidebarDragAndDrop(
       setDragOverItemId(null);
       return;
     }
+
+    // Prevent dragging a folder onto a file
+    if (draggedItem.type === "folder" && item.type === "file") {
+      setDragOverItemId(null);
+      return;
+    }
+
     // Prevent dragging a folder into its own child
     if (draggedItem.type === "folder") {
       const isChild = (parent: FolderItem, childId: string): boolean => {
@@ -104,6 +122,13 @@ export function useSidebarDragAndDrop(
       setDraggedItem(null);
       return;
     }
+
+    // Prevent dropping folders onto files
+    if (draggedItem.type === "folder" && targetItem.type === "file") {
+      setDraggedItem(null);
+      return;
+    }
+
     // Deep clone dragged item and items
     const draggedItemClone = JSON.parse(JSON.stringify(draggedItem));
     let newItems = JSON.parse(JSON.stringify(items));
@@ -123,8 +148,17 @@ export function useSidebarDragAndDrop(
         .filter((item): item is ProjectItem => item !== null);
     };
     newItems = removeItem(newItems);
+
+    // Find parent of dragged item before moving
+    const originalParent = findParentById(draggedItem.id, items);
+    const originalParentId = originalParent ? originalParent.id : null;
+    let newParentId: string | null = null;
+
     // Add the dragged item to its new position
     if (dragPosition === "middle" && targetItem.type === "folder") {
+      // Item is dropped inside a folder
+      newParentId = targetItem.id;
+
       const addToFolder = (items: ProjectItem[]): ProjectItem[] => {
         return items.map((item) => {
           if (item.id === targetItem.id && item.type === "folder") {
@@ -140,7 +174,15 @@ export function useSidebarDragAndDrop(
         });
       };
       newItems = addToFolder(newItems);
+
+      // Notify backend about parent change if parent has changed
+      if (originalParentId !== newParentId && onUpdateItemParent) {
+        onUpdateItemParent(draggedItem.id, newParentId, draggedItem.type);
+      }
     } else {
+      const targetParent = findParentById(targetItem.id, items);
+      newParentId = targetParent ? targetParent.id : null;
+
       const insertAtPosition = (
         items: ProjectItem[],
         parentId: string | null
@@ -177,11 +219,16 @@ export function useSidebarDragAndDrop(
           return item;
         });
       };
-      const targetParent = findParentById(targetItem.id, items);
+
       newItems = insertAtPosition(
         newItems,
         targetParent ? targetParent.id : null
       );
+
+      // Notify backend about parent change if parent has changed
+      if (originalParentId !== newParentId && onUpdateItemParent) {
+        onUpdateItemParent(draggedItem.id, newParentId, draggedItem.type);
+      }
     }
     onUpdateItems(newItems);
     setDraggedItem(null);
@@ -197,6 +244,11 @@ export function useSidebarDragAndDrop(
     setDragPosition(null);
     const draggedItemClone = JSON.parse(JSON.stringify(draggedItem));
     let newItems = JSON.parse(JSON.stringify(items));
+
+    // Find parent of dragged item before removing
+    const originalParent = findParentById(draggedItem.id, items);
+    const originalParentId = originalParent ? originalParent.id : null;
+
     const removeItem = (items: ProjectItem[]): ProjectItem[] => {
       return items
         .map((item) => {
@@ -212,6 +264,12 @@ export function useSidebarDragAndDrop(
     newItems = removeItem(newItems);
     newItems.push(draggedItemClone);
     onUpdateItems(newItems);
+
+    // Notify backend about parent change if item had a parent before
+    if (originalParentId !== null && onUpdateItemParent) {
+      onUpdateItemParent(draggedItem.id, null, draggedItem.type);
+    }
+
     setDraggedItem(null);
   }
 

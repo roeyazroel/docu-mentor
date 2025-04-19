@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Folder } from "lucide-react";
 import React from "react";
 import { ProjectSidebarContextMenu } from "./ProjectSidebarContextMenu";
 import { FolderItem, StorageProvider } from "./ProjectSidebarTypes";
-import { sortItems } from "./ProjectSidebarUtils";
 
 /**
  * Props for ProjectSidebarFolderItem.
@@ -55,7 +55,13 @@ export function ProjectSidebarFolderItem({
 
   return (
     <div style={{ paddingLeft: `${depth * 12}px` }}>
-      <ProjectSidebarContextMenu>
+      <ProjectSidebarContextMenu
+        itemId={item.id}
+        itemName={item.name}
+        itemType="folder"
+        onStartRenaming={rest.onStartRenaming}
+        onDeleteItem={rest.onDeleteItem}
+      >
         <div
           className="flex items-center py-1 px-2 text-sm rounded-md hover:bg-muted"
           onClick={() => rest.onToggleFolder(item.id)}
@@ -77,7 +83,19 @@ export function ProjectSidebarFolderItem({
             {isExpanded ? <span>&#9660;</span> : <span>&#9654;</span>}
           </Button>
           <Folder className={`h-4 w-4 mr-2 ${providerInfo.color}`} />
-          <span className="truncate">{item.name}</span>
+          {rest.renamingItem && rest.renamingItem.id === item.id ? (
+            <Input
+              value={rest.renamingItem.name}
+              onChange={(e) => rest.onRenameInputChange(e.target.value)}
+              onBlur={rest.onRenameInputBlur}
+              onKeyDown={rest.onRenameInputKeyDown}
+              className="h-6 py-0 px-1 text-xs"
+              autoFocus
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <span className="truncate">{item.name}</span>
+          )}
           {item.provider !== "local" && (
             <Badge variant="outline" className="ml-2 px-1 py-0 text-[10px]">
               {item.provider === "google-drive"
@@ -90,11 +108,7 @@ export function ProjectSidebarFolderItem({
         </div>
       </ProjectSidebarContextMenu>
       {isExpanded && item.children.length > 0 && (
-        <div>
-          {sortItems(item.children).map((child) =>
-            renderItem(child, depth + 1)
-          )}
-        </div>
+        <div>{item.children.map((child) => renderItem(child, depth + 1))}</div>
       )}
     </div>
   );
