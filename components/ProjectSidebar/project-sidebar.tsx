@@ -389,6 +389,7 @@ export default function ProjectSidebar({
 
       <div className="p-3 border-t flex justify-center">
         <OrganizationSwitcher
+
           afterCreateOrganizationUrl={(organization) => {
             console.log("organization", organization);
             setActiveOrganization(organization.id);
@@ -409,7 +410,7 @@ export default function ProjectSidebar({
             elements: {
               rootBox: "w-full",
               organizationSwitcherTrigger:
-                "w-full py-2 flex justify-between items-center rounded-md bg-muted/50 hover:bg-muted transition-colors",
+                "w-full py-2 flex justify-between items-center rounded-md bg-muted/50 hover:bg-muted transition-colors dark:text-white dark:bg-muted/50",
             },
           }}
         />

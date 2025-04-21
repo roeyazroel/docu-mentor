@@ -15,17 +15,57 @@ import {
   Share2,
   Users,
 } from "lucide-react";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export const EditorHeader: React.FC = () => {
   const { user } = useUser();
+  const headerRef = useRef<HTMLElement>(null);
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Try to access the history toggle function from the parent page
+  useEffect(() => {
+    // Add a data attribute so the page can find this component
+    if (headerRef.current) {
+      headerRef.current.setAttribute("data-header-component", "true");
+    }
+
+    // Set up a polling interval to check for updates to the history state
+    const interval = setInterval(() => {
+      if (headerRef.current) {
+        const currentState = (headerRef.current as any).__historyState;
+        if (currentState !== undefined && currentState !== showHistory) {
+          setShowHistory(currentState);
+        }
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [showHistory]);
+
+  // Handle history button click
+  const handleHistoryClick = () => {
+    // First update our local state
+    const newState = !showHistory;
+    setShowHistory(newState);
+
+    // Then try to call the toggle function from the parent
+    if (
+      headerRef.current &&
+      typeof (headerRef.current as any).__historyToggle === "function"
+    ) {
+      (headerRef.current as any).__historyToggle();
+    }
+  };
 
   if (!user) {
     return null;
   }
 
   return (
-    <header className="border-b pl-4 pr-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
+    <header
+      ref={headerRef}
+      className="border-b pl-4 pr-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30"
+    >
       <div className="flex h-16 items-center px-0 w-full justify-between">
         <div className="flex items-center gap-2 mr-6">
           <FileText className="h-5 w-5 text-primary" />
@@ -42,9 +82,14 @@ export const EditorHeader: React.FC = () => {
         </div> */}
         <div className="flex items-center gap-3">
           <Button
-            variant="ghost"
+            variant={showHistory ? "default" : "ghost"}
             size="sm"
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className={
+              showHistory
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground transition-colors"
+            }
+            onClick={handleHistoryClick}
           >
             <History className="h-4 w-4 mr-2" />
             History

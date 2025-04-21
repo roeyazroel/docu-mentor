@@ -1,4 +1,4 @@
-import { ClerkProvider } from "@clerk/nextjs";
+import ClerkWrapper from "@/components/clerkWrapper";
 import type React from "react";
 import "./globals.css";
 
@@ -8,7 +8,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkWrapper>
       <html lang="en" suppressHydrationWarning>
         <head>
           <title>DocuMentor</title>
@@ -16,6 +16,6 @@ export default function RootLayout({
         </head>
         <body>{children}</body>
       </html>
-    </ClerkProvider>
+    </ClerkWrapper>
   );
 }

@@ -29,8 +29,8 @@ try {
 import express, { Request, Response } from "express";
 import http from "http";
 import next from "next";
+import "./asyncLocalStorageSetup";
 import { setupWebSocketServer } from "./lib/websocket/server";
-
 // Log for debugging
 console.log(
   "Main server - OPENAI_API_KEY exists:",

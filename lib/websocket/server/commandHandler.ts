@@ -1,9 +1,17 @@
+import { getUserById } from "./auth";
+import {
+  addUserToOrganization,
+  createOrganizationIfNotExists,
+  createUserIfNotExists,
+  setupDatabaseProcedures,
+} from "./database";
 import {
   handleCreateFile,
   handleDeleteFile,
   handleGetFileInfo,
   handleMoveFile,
   handleRenameFile,
+  handleRevertFileVersion,
   handleUpdateFile,
 } from "./fileOperations";
 import {
@@ -16,51 +24,60 @@ import { handleGetFiles } from "./queryOperations";
 import { Client, Message } from "./types";
 import { joinFile, joinOrganization, leaveFile } from "./utils";
 
+// Initialize database procedures
+setupDatabaseProcedures().catch((err) => {
+  console.error("Failed to set up database procedures:", err);
+});
+
 /**
  * Main command handler for WebSocket messages
  */
-export function handleCommand(ws: Client, msg: Message): void {
+export async function handleCommand(ws: Client, msg: Message): Promise<void> {
   console.log(`[handleCommand] Received command: ${msg.type}`, msg);
 
   switch (msg.type) {
     case "create_file":
-      handleCreateFile(ws, msg);
+      await handleCreateFile(ws, msg);
       break;
 
     case "update_file":
-      handleUpdateFile(ws, msg);
+      await handleUpdateFile(ws, msg);
       break;
 
     case "delete_file":
-      handleDeleteFile(ws, msg);
+      await handleDeleteFile(ws, msg);
       break;
 
     case "rename_file":
-      handleRenameFile(ws, msg);
+      await handleRenameFile(ws, msg);
       break;
 
     case "move_file":
-      handleMoveFile(ws, msg);
+      await handleMoveFile(ws, msg);
+      break;
+
+    case "revert_file_version":
+      await handleRevertFileVersion(ws, msg);
       break;
 
     case "create_folder":
-      handleCreateFolder(ws, msg);
+      await handleCreateFolder(ws, msg);
       break;
 
     case "rename_folder":
-      handleRenameFolder(ws, msg);
+      await handleRenameFolder(ws, msg);
       break;
 
     case "move_folder":
-      handleMoveFolder(ws, msg);
+      await handleMoveFolder(ws, msg);
       break;
 
     case "delete_folder":
-      handleDeleteFolder(ws, msg);
+      await handleDeleteFolder(ws, msg);
       break;
 
     case "get_file_info":
-      handleGetFileInfo(ws, msg);
+      await handleGetFileInfo(ws, msg);
       break;
 
     case "join_organization": {
@@ -69,6 +86,41 @@ export function handleCommand(ws: Client, msg: Message): void {
         console.log(
           `[join_organization] Client joining org: ${organizationId}`
         );
+
+        // Ensure the organization exists in the database
+        if (ws.userId) {
+          try {
+            // Create organization if it doesn't exist
+            const orgName =
+              msg.name || `Organization ${organizationId.substring(0, 8)}`;
+            await createOrganizationIfNotExists(organizationId, orgName);
+
+            // Create the user first if needed
+            const userId = ws.userId;
+            const userName = ws.userName || `User ${userId.substring(0, 8)}`;
+            try {
+              // Get user email from Clerk
+              const user = await getUserById(userId);
+              const userEmail = user.emailAddresses[0].emailAddress;
+              const avatar = user.imageUrl;
+
+              // Create user if not exists
+              await createUserIfNotExists(userId, userName, userEmail, avatar);
+
+              // Now add user to organization
+              await addUserToOrganization(userId, organizationId);
+            } catch (error) {
+              console.error(
+                `[join_organization] Error creating user or getting email:`,
+                error
+              );
+            }
+          } catch (error) {
+            console.error(`[join_organization] Database error:`, error);
+          }
+        }
+
+        // Join the organization in memory for real-time updates
         joinOrganization(ws, organizationId);
       }
       break;
@@ -89,6 +141,26 @@ export function handleCommand(ws: Client, msg: Message): void {
         if (userName) ws.userName = userName;
         if (avatar) ws.avatarUrl = avatar;
         if (sessionId) ws.sessionId = sessionId;
+
+        // Ensure user exists in database
+        try {
+          const user = await getUserById(userId);
+          const userEmail = user.emailAddresses[0].emailAddress;
+          const avatar = user.imageUrl;
+          await createUserIfNotExists(
+            userId,
+            userName || `User ${userId.substring(0, 8)}`,
+            userEmail,
+            avatar
+          );
+
+          // If organization ID is provided, ensure user belongs to it
+          if (ws.organizationId) {
+            await addUserToOrganization(userId, ws.organizationId);
+          }
+        } catch (error) {
+          console.error(`[join_file] Database error creating user:`, error);
+        }
 
         // Use the fileId if provided, otherwise use the path
         if (fileId) {
@@ -122,7 +194,7 @@ export function handleCommand(ws: Client, msg: Message): void {
     }
 
     case "get_files":
-      handleGetFiles(ws, msg);
+      await handleGetFiles(ws, msg);
       break;
 
     case "ping": {

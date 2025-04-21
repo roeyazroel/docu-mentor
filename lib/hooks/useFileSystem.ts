@@ -35,6 +35,21 @@ export interface OnlineUser {
   sessionId?: string; // Add sessionId for unique identification
 }
 
+// Define a type for access log entries
+export interface AccessLogEntry {
+  id: string;
+  node_id: string;
+  user_id: string;
+  action: "create" | "read" | "update" | "delete" | "rename" | "move";
+  timestamp: string;
+  users: {
+    id: string;
+    name: string;
+    email: string;
+    avatar_url: string;
+  };
+}
+
 /**
  * React hook for managing file system operations via WebSocket connection
  * Extracted from app/editor/page.tsx to separate concerns
@@ -57,6 +72,9 @@ export function useFileSystem(
   const [connectionState, setConnectionState] =
     useState<ConnectionStatus>("disconnected");
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
+  const [accessLogs, setAccessLogs] = useState<AccessLogEntry[]>([]); // Add state for access logs
+  const [fileVersions, setFileVersions] = useState<any[]>([]); // Add state for file versions
+  const [currentVersion, setCurrentVersion] = useState<number | undefined>();
   const previousActiveFileIdRef = useRef<string | null>(null);
   const activeFileIdRef = useRef<string | null>(null); // Ref to hold current activeFileId for stable access in callbacks
   // Add a ref to track items being processed to prevent duplicates
@@ -205,6 +223,20 @@ export function useFileSystem(
               // If file_updated but not for current file, still update metadata
               handleItemUpdated(data);
             }
+
+            // Update file versions if they're present in the response
+            if (data.history) {
+              console.log(
+                `[WebSocket] Received file history with ${data.history.length} versions`
+              );
+              setFileVersions(data.history);
+            }
+
+            // Update current version if present
+            if (data.version) {
+              setCurrentVersion(data.version);
+            }
+
             break;
           }
 
@@ -215,6 +247,20 @@ export function useFileSystem(
             }
             // Let handleFileInfo handle metadata update
             handleFileInfo(data);
+
+            // Update file versions if they're present in the response
+            if (data.history) {
+              console.log(
+                `[WebSocket] Received file history with ${data.history.length} versions`
+              );
+              setFileVersions(data.history);
+            }
+
+            // Update current version if present
+            if (data.version) {
+              setCurrentVersion(data.version);
+            }
+
             break;
           }
 
@@ -272,6 +318,28 @@ export function useFileSystem(
               break;
             }
             moveItemToNewParent(data.id, data.newParentId);
+            break;
+          }
+
+          case "file_reverted": {
+            if (data.id === currentActiveFileId && data.content !== undefined) {
+              // Update content when a file is reverted
+              console.log(
+                `[WebSocket] File reverted: ${data.id} to version: ${data.currentVersion}`
+              );
+              setDocumentContent(data.content);
+              setLastSavedContent(data.content);
+
+              // Update item metadata
+              handleItemUpdated(data);
+            }
+            break;
+          }
+
+          case "file_revert_error": {
+            console.error(
+              `[WebSocket] File revert error for ${data.id}: ${data.error}`
+            );
             break;
           }
 
@@ -372,6 +440,7 @@ export function useFileSystem(
     if (!wsManager || !activeOrganization || !wsManager.isConnected) return;
 
     if (activeFileId) {
+      // Join the file session first
       joinFileSession(
         wsManager,
         activeFileId,
@@ -380,6 +449,13 @@ export function useFileSystem(
         userAvatar || "",
         sessionId
       );
+
+      // Always request file info when joining a file, not just if it doesn't exist locally
+      // This ensures we get the most up-to-date content from the server
+      console.log(
+        `[useFileSystem] Requesting info for file ${activeFileId} after joining`
+      );
+      requestFileInfo(wsManager, activeFileId, activeOrganization);
     }
   }, [
     wsManager,
@@ -400,15 +476,26 @@ export function useFileSystem(
         // Content is set directly via WebSocket message handler
         setDocumentTitle(itemData.name);
         setLastSavedTitle(itemData.name);
-        // REMOVED: setDocumentContent(itemData.content);
-        // REMOVED: setLastSavedContent(itemData.content);
+
+        // If the file has content in projectItems, set it directly
+        if (itemData.content !== undefined) {
+          setDocumentContent(itemData.content);
+          setLastSavedContent(itemData.content);
+        }
+        // Otherwise, request the content if we have a connection
+        else if (wsManager && wsManager.isConnected && activeOrganization) {
+          console.log(
+            `[useFileSystem] Requesting content for file ${activeFileId} - not found locally`
+          );
+          requestFileInfo(wsManager, activeFileId, activeOrganization);
+        }
       }
     } else {
       // Clear title if no file is active
       setDocumentTitle("");
       setLastSavedTitle("");
     }
-  }, [activeFileId, projectItems]);
+  }, [activeFileId, projectItems, wsManager, activeOrganization]);
 
   const findFirstFile = (items: ProjectItem[]): string | null => {
     for (const item of items) {
@@ -584,10 +671,10 @@ export function useFileSystem(
 
             // Update last saved state ONLY if it's the active file
             if (currentActiveFileId === data.id) {
-              // REMOVED setTimeout
+              // Also update the current document content to ensure it's always in sync
+              setDocumentContent(data.content);
               setLastSavedContent(data.content);
               setLastSavedTitle(updatedItem.name);
-              // Document content itself is now updated directly in the main message handler
             }
           }
 
@@ -641,6 +728,21 @@ export function useFileSystem(
     // First check for existing item
     const existingItem = findItemById(data.id, projectItems);
     console.log("[handleFileInfo] Existing item:", existingItem);
+
+    // Update document content if this is for the active file
+    const currentActiveFileId = activeFileIdRef.current;
+    if (data.id === currentActiveFileId && data.content !== undefined) {
+      console.log(
+        `[handleFileInfo] Updating content for active file: ${data.id}`
+      );
+      setDocumentContent(data.content);
+      setLastSavedContent(data.content);
+    }
+
+    // Set accessLogs if present in the WebSocket message
+    if (data.id === currentActiveFileId && Array.isArray(data.accessLogs)) {
+      setAccessLogs(data.accessLogs);
+    }
 
     if (existingItem) {
       // Item exists, just update it
@@ -1057,6 +1159,57 @@ export function useFileSystem(
     );
   };
 
+  // Add a function to revert to a specific version
+  const revertToVersion = useCallback(
+    (fileId: string, version: number): Promise<void> => {
+      if (!wsManager || !wsManager.isConnected || !activeOrganization) {
+        return Promise.reject(new Error("WebSocket connection is not open"));
+      }
+
+      return new Promise<void>((resolve, reject) => {
+        // Setup one-time message handler for the revert response
+        const handleMessage = (event: MessageEvent) => {
+          try {
+            const data = JSON.parse(event.data);
+
+            // Handle successful revert
+            if (data.type === "file_reverted" && data.id === fileId) {
+              wsManager.removeEventListener("message", handleMessage);
+              resolve();
+            }
+
+            // Handle revert errors
+            if (data.type === "file_revert_error" && data.id === fileId) {
+              wsManager.removeEventListener("message", handleMessage);
+              reject(new Error(data.error));
+            }
+          } catch (err) {
+            console.error("Error parsing WebSocket message:", err);
+          }
+        };
+
+        // Add temporary message listener
+        wsManager.addEventListener("message", handleMessage);
+
+        // Send revert message
+        wsManager.send({
+          type: "revert_file_version",
+          path: fileId,
+          organizationId: activeOrganization,
+          sessionId,
+          version,
+        });
+
+        // Set a timeout to clean up and reject if no response
+        setTimeout(() => {
+          wsManager.removeEventListener("message", handleMessage);
+          reject(new Error("Revert operation timed out"));
+        }, 10000);
+      });
+    },
+    [wsManager, activeOrganization, sessionId]
+  );
+
   return {
     ws: wsManager,
     projectItems,
@@ -1085,5 +1238,9 @@ export function useFileSystem(
     moveFolderItem,
     hasUnsavedChanges,
     onlineUsers,
+    accessLogs,
+    fileVersions,
+    revertToVersion,
+    currentVersion,
   };
 }

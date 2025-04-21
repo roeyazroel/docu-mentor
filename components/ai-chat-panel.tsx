@@ -23,7 +23,6 @@ export default function AiChatPanel({
   handleSendMessage,
   isGenerating,
   chatContainerRef,
-  apiKeyError,
 }: AiChatPanelProps) {
   // Create a local ref if one isn't provided
   const localRef = useRef<HTMLDivElement>(null);

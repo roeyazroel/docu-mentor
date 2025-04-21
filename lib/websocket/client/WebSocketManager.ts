@@ -18,6 +18,8 @@ export class WebSocketManager {
   private pingTimeout: NodeJS.Timeout | null = null;
   private isReconnecting: boolean = false;
   private authToken: string | null = null;
+  private lastPingTime: number = 0;
+  private lastPongTime: number = 0;
 
   // Connection state
   private _isConnected: boolean = false;
@@ -31,8 +33,17 @@ export class WebSocketManager {
   private onAuthFailureCallbacks: Array<() => void> = [];
 
   // Constants
-  private readonly PING_INTERVAL = 25000; // 25 seconds
+  private readonly PING_INTERVAL = 20000; // 20 seconds
   private readonly PING_TIMEOUT = 5000; // 5 seconds timeout to receive pong
+  private readonly CONNECTION_HEALTH_CHECK_INTERVAL = 15000; // Check connection health every 15 seconds
+
+  // Temporary event listeners for specific message handling
+  private temporaryMessageListeners: Map<
+    (event: MessageEvent) => void,
+    (event: MessageEvent) => void
+  > = new Map();
+
+  private healthCheckInterval: NodeJS.Timeout | null = null;
 
   /**
    * Creates a new WebSocketManager
@@ -52,6 +63,7 @@ export class WebSocketManager {
     this.reconnect = this.reconnect.bind(this);
     this.sendPing = this.sendPing.bind(this);
     this.handlePong = this.handlePong.bind(this);
+    this.checkConnectionHealth = this.checkConnectionHealth.bind(this);
   }
 
   /**
@@ -285,10 +297,20 @@ export class WebSocketManager {
     // Notify all listeners
     this.onCloseCallbacks.forEach((callback) => callback(event));
 
-    // Attempt to reconnect if not deliberately closed by the client
-    // Code 1000 represents normal closure (intentional)
-    if (!this.isReconnecting && event.code !== 1000) {
-      this.reconnect();
+    // Attempt to reconnect if not a normal intentional closure
+    if (!this.isReconnecting) {
+      if (event.code === 1005) {
+        console.log(
+          "[WebSocketManager] Connection closed with code 1005 (No Status Received), attempting reconnect"
+        );
+        this.reconnect();
+      } else if (event.code !== 1000) {
+        // Reconnect for any non-normal close
+        console.log(
+          `[WebSocketManager] Connection closed with code ${event.code}, attempting reconnect`
+        );
+        this.reconnect();
+      }
     }
   }
 
@@ -312,86 +334,46 @@ export class WebSocketManager {
    * Handles WebSocket message event
    */
   private handleMessage(event: MessageEvent): void {
+    // Try to parse the message to handle system messages like pong
     try {
       const data = JSON.parse(event.data);
 
-      // Handle different message types
-      switch (data.type) {
-        case "ping": {
-          console.log("[WebSocketManager] Received ping from server");
-          this.ws?.send(
-            JSON.stringify({
-              type: "pong",
-              timestamp: data.timestamp,
-            })
-          );
-          break;
-        }
+      // Handle pong messages from server
+      if (data.type === "ping") {
+        // Reply with pong
+        this.send({
+          type: "pong",
+          timestamp: data.timestamp,
+        });
 
-        case "pong": {
-          this.handlePong(data);
-          break;
-        }
-
-        case "file_renamed": {
-          console.log(
-            `[WebSocketManager] File renamed: ${data.id} from "${data.oldName}" to "${data.newName}"`
-          );
-          this.messageHandler(event);
-          break;
-        }
-
-        case "file_moved": {
-          console.log(
-            `[WebSocketManager] File moved: ${data.id} from parent ${data.oldParentId} to ${data.newParentId}`
-          );
-          this.messageHandler(event);
-          break;
-        }
-
-        case "folder_renamed": {
-          console.log(
-            `[WebSocketManager] Folder renamed: ${data.id} from "${data.oldName}" to "${data.newName}"`
-          );
-          this.messageHandler(event);
-          break;
-        }
-
-        case "folder_moved": {
-          console.log(
-            `[WebSocketManager] Folder moved: ${data.id} from parent ${data.oldParentId} to ${data.newParentId}`
-          );
-          this.messageHandler(event);
-          break;
-        }
-
-        case "file_updated": {
-          // For file_updated, trim content in logs for better readability
-          const logData = data.content
-            ? {
-                ...data,
-                content: `${data.content.substring(0, 20)}... (${
-                  data.content.length
-                } chars)`,
-              }
-            : data;
-          console.log(`[WebSocketManager] Received file update:`, logData);
-          this.messageHandler(event);
-          break;
-        }
-
-        default: {
-          // Standard message handling with basic logging
-          console.log(
-            `[WebSocketManager] Received message: ${data.type}`,
-            data
-          );
-          this.messageHandler(event);
-          break;
-        }
+        this.lastPongTime = Date.now();
       }
+
+      // Handle pong responses to our pings
+      if (data.type === "pong") {
+        this.handlePong(data);
+      }
+    } catch (e) {
+      // Not JSON or other parsing error, continue with normal handling
+    }
+
+    // Call all temporary message listeners first
+    this.temporaryMessageListeners.forEach((listener) => {
+      try {
+        listener(event);
+      } catch (error) {
+        console.error(
+          "[WebSocketManager] Error in temporary message listener:",
+          error
+        );
+      }
+    });
+
+    // Call the main message handler
+    try {
+      this.messageHandler(event);
     } catch (error) {
-      console.error("[WebSocketManager] Error parsing message:", error);
+      console.error("[WebSocketManager] Error handling message:", error);
     }
   }
 
@@ -452,6 +434,11 @@ export class WebSocketManager {
     this.pingInterval = setInterval(() => {
       this.sendPing();
     }, this.PING_INTERVAL);
+
+    // Start the connection health check
+    this.healthCheckInterval = setInterval(() => {
+      this.checkConnectionHealth();
+    }, this.CONNECTION_HEALTH_CHECK_INTERVAL);
   }
 
   /**
@@ -462,6 +449,12 @@ export class WebSocketManager {
     if (this.pingInterval) {
       clearInterval(this.pingInterval);
       this.pingInterval = null;
+    }
+
+    // Clear the health check interval if it exists
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = null;
     }
 
     // Clear the ping timeout if it exists
@@ -483,6 +476,8 @@ export class WebSocketManager {
       type: "ping",
       timestamp: Date.now(),
     };
+
+    this.lastPingTime = Date.now();
 
     // Clear any existing timeout
     if (this.pingTimeout) {
@@ -515,5 +510,66 @@ export class WebSocketManager {
     // Calculate and log round-trip time
     const rtt = Date.now() - data.timestamp;
     console.log(`[WebSocketManager] Received pong (RTT: ${rtt}ms)`);
+  }
+
+  /**
+   * Checks if the connection is healthy by looking at the time since the last pong
+   */
+  private checkConnectionHealth(): void {
+    if (!this.isConnected) return;
+
+    const now = Date.now();
+    const timeSinceLastPong = now - this.lastPongTime;
+
+    // If it's been too long since we got a pong, force close the connection
+    if (this.lastPongTime > 0 && timeSinceLastPong > this.PING_INTERVAL * 2) {
+      console.warn(
+        `[WebSocketManager] Connection health check failed - no pong received in ${timeSinceLastPong}ms`
+      );
+      // Force close the connection so it will reconnect
+      if (this.ws) {
+        this.ws.close();
+      }
+    }
+  }
+
+  /**
+   * Adds a temporary event listener for messages
+   * @param type Only 'message' is supported
+   * @param listener The function to call when a message is received
+   */
+  public addEventListener(
+    type: string,
+    listener: (event: MessageEvent) => void
+  ): void {
+    if (type !== "message") {
+      console.warn(
+        `[WebSocketManager] Only 'message' event type is supported, got '${type}'`
+      );
+      return;
+    }
+
+    // Store the listener in our map
+    this.temporaryMessageListeners.set(listener, listener);
+  }
+
+  /**
+   * Removes a temporary event listener
+   * @param type Only 'message' is supported
+   * @param listener The function to remove
+   */
+  public removeEventListener(
+    type: string,
+    listener: (event: MessageEvent) => void
+  ): void {
+    if (type !== "message") {
+      console.warn(
+        `[WebSocketManager] Only 'message' event type is supported, got '${type}'`
+      );
+      return;
+    }
+
+    // Remove the listener from our map
+    this.temporaryMessageListeners.delete(listener);
   }
 }

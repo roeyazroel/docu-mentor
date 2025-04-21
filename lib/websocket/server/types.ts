@@ -32,6 +32,7 @@ export interface Message {
   organizationId?: string;
   sessionId?: string;
   timestamp?: number; // Used for ping/pong messages
+  version?: number; // Used for revert operations
 }
 
 // Ping/Pong message types
@@ -59,6 +60,7 @@ export interface FileNode {
   parentId: string | null;
   children?: string[];
   id?: string;
+  accessLogs?: any[]; // Array of access logs for the node
 }
 
 // In-memory data structures
