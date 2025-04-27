@@ -1,11 +1,10 @@
 "use client";
 
-import AiChatPanel from "@/components/ai-chat-panel";
 import { AccessLogsPanel } from "@/components/editor/AccessLogsPanel";
 import { EditorUsersPanel } from "@/components/editor/EditorUsersPanel";
 import { FileHistoryEditor } from "@/components/editor/FileHistoryEditor";
 import { SaveIndicator } from "@/components/editor/SaveIndicator";
-import ProjectSidebar from "@/components/ProjectSidebar/project-sidebar";
+import ChatSidebar from "@/components/chat-sidebar";
 import ResizablePanel from "@/components/resizable-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEditorContext } from "@/context/EditorContext";
@@ -13,7 +12,7 @@ import { useAiChat } from "@/lib/hooks/useAiChat";
 import { useDocument } from "@/lib/hooks/useDocument";
 import { useFileSystem } from "@/lib/hooks/useFileSystem";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { ClipboardList, MessageSquare, Users } from "lucide-react";
+import { ClipboardList, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -104,28 +103,16 @@ export default function EditorPage() {
       ) : (
         <div className="flex flex-col h-full overflow-hidden">
           <div className="flex flex-1 overflow-hidden">
-            {/* Project Sidebar - Resizable */}
-            <ResizablePanel
-              defaultWidth={240}
-              minWidth={180}
-              maxWidth={400}
-              side="left"
-            >
-              <DndProvider backend={HTML5Backend}>
-                <ProjectSidebar
-                  items={projectItems}
-                  activeFileId={activeFileId}
-                  onFileSelect={handleFileSelect}
-                  onUpdateItems={setProjectItems}
-                  onCreateFile={createFile}
-                  onCreateFolder={createFolder}
-                  onDeleteFile={deleteFile}
-                  onDeleteFolder={deleteFolder}
-                  onUpdateItemParent={updateItemParent}
-                  websocketManager={ws}
-                />
-              </DndProvider>
-            </ResizablePanel>
+            {/* Replace ProjectSidebar with ChatSidebar */}
+            <ChatSidebar
+              messages={chatMessages}
+              inputMessage={inputMessage}
+              setInputMessage={setInputMessage}
+              handleSendMessage={handleSendMessage}
+              isGenerating={isGenerating}
+              chatContainerRef={chatContainerRef as React.RefObject<HTMLDivElement>}
+              apiKeyError={apiKeyError}
+            />
 
             <FileHistoryEditor
               activeFileId={activeFileId}
@@ -144,7 +131,7 @@ export default function EditorPage() {
               showHistory={showHistory}
             />
 
-            {/* Chat Panel - Resizable */}
+            {/* Right Panel - Keep the users and activity tabs, but remove the chat tab */}
             <ResizablePanel
               defaultWidth={320}
               minWidth={280}
@@ -152,15 +139,8 @@ export default function EditorPage() {
               side="right"
             >
               <div className="h-full flex flex-col overflow-hidden border-l">
-                <Tabs defaultValue="chat">
+                <Tabs defaultValue="users">
                   <TabsList className="w-full justify-start h-[37px] rounded-none">
-                    <TabsTrigger
-                      value="chat"
-                      className="flex items-center gap-1"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                      AI Chat
-                    </TabsTrigger>
                     <TabsTrigger
                       value="users"
                       className="flex items-center gap-1"
@@ -176,23 +156,6 @@ export default function EditorPage() {
                       Activity
                     </TabsTrigger>
                   </TabsList>
-
-                  <TabsContent
-                    value="chat"
-                    className="flex-1 flex flex-col overflow-hidden m-0 p-0"
-                  >
-                    <AiChatPanel
-                      messages={chatMessages}
-                      inputMessage={inputMessage}
-                      setInputMessage={setInputMessage}
-                      handleSendMessage={handleSendMessage}
-                      isGenerating={isGenerating}
-                      chatContainerRef={
-                        chatContainerRef as React.RefObject<HTMLDivElement>
-                      }
-                      apiKeyError={apiKeyError}
-                    />
-                  </TabsContent>
 
                   <TabsContent
                     value="users"

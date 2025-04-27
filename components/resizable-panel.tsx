@@ -12,6 +12,7 @@ interface ResizablePanelProps {
   maxWidth: number
   side: "left" | "right"
   className?: string
+  storageKey?: string
 }
 
 export default function ResizablePanel({
@@ -21,12 +22,39 @@ export default function ResizablePanel({
   maxWidth,
   side,
   className,
+  storageKey,
 }: ResizablePanelProps) {
-  const [width, setWidth] = useState(defaultWidth)
+  // Initialize width from localStorage if available
+  const getInitialWidth = () => {
+    if (typeof window !== 'undefined' && storageKey) {
+      const savedWidth = localStorage.getItem(`resizable-panel-${storageKey}`);
+      if (savedWidth) {
+        const parsedWidth = parseInt(savedWidth, 10);
+        if (!isNaN(parsedWidth) && parsedWidth >= minWidth && parsedWidth <= maxWidth) {
+          return parsedWidth;
+        }
+      }
+    }
+    return defaultWidth;
+  };
+
+  const [width, setWidth] = useState(defaultWidth); // Initialize with default, will be updated in useEffect
   const [isResizing, setIsResizing] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
   const startXRef = useRef<number>(0)
   const startWidthRef = useRef<number>(defaultWidth)
+
+  // Load saved width on mount
+  useEffect(() => {
+    setWidth(getInitialWidth());
+  }, []);
+
+  // Save width to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && storageKey && !isResizing) {
+      localStorage.setItem(`resizable-panel-${storageKey}`, width.toString());
+    }
+  }, [width, isResizing, storageKey]);
 
   // Handle mouse down on the resize handle
   const handleMouseDown = (e: React.MouseEvent) => {
