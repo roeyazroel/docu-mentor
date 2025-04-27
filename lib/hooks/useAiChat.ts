@@ -17,14 +17,7 @@ export function useAiChat(
   setDocumentContent: (content: string) => void
 ) {
   // Chat state
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      content:
-        "Hello! I'm your AI writing assistant. How can I help with your document today?",
-      id: "initial-message",
-    },
-  ]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
