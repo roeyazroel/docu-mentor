@@ -11,8 +11,9 @@ export default function RootLayout({
     <ClerkWrapper>
       <html lang="en" suppressHydrationWarning>
         <head>
-          <title>DocuMentor</title>
+          <title>Documentor</title>
           <meta name="description" content="AI-powered document editor" />
+          <link rel="icon" href="/favicon.png" sizes="any" />
         </head>
         <body>{children}</body>
       </html>
