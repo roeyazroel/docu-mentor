@@ -10,15 +10,14 @@ export default function RootLayout({
 }) {
   return (
     <ClerkWrapper>
-      <LiveBlocksWrapper>
-        <html lang="en" suppressHydrationWarning>
-          <head>
-            <title>DocuMentor</title>
-            <meta name="description" content="AI-powered document editor" />
-          </head>
-          <body>{children}</body>
-        </html>
-      </LiveBlocksWrapper>
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <title>Documentor</title>
+          <meta name="description" content="AI-powered document editor" />
+          <link rel="icon" href="/favicon.png" sizes="any" />
+        </head>
+        <body>{children}</body>
+      </html>
     </ClerkWrapper>
   );
 }

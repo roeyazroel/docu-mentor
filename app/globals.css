@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,49 +8,76 @@
 @import "../styles/prosemirror.css";
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif; /* Default to Inter */
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+  /* Glassmorphic effect */
+  .glass {
+    @apply bg-white/10 backdrop-blur-lg border-b border-white/30;
+  }
+  /* Card styling */
+  .card-float {
+    @apply bg-white rounded-lg shadow-md border border-border transition-shadow duration-300;
+  }
+  /* Cool gradient */
+  .bg-cool-gradient {
+    background-image: linear-gradient(135deg, #6E59A5 0%, #8B5CF6 50%, #F97316 100%);
+  }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Updated based on plan.md */
+    --background: 255 100% 100%; /* White */
+    --foreground: 247 18% 17%;   /* Dark Text Purple #1A1F2C */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 255 100% 100%; /* White for card */
+    --card-foreground: 247 18% 17%; /* Dark Text Purple */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 247 18% 17%;
 
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 250 50% 45%; /* Primary Purple */
+    --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 250 100% 94%; /* Light Purple Background #E5DEFF */
+    --secondary-foreground: 247 18% 17%; /* Dark Text Purple */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 250 20% 88%; /* Border Color */
+    --muted-foreground: 240 6% 41%; /* Body Text Purple #4A4A68 - Adjusted HSL */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 24 95% 53%; /* Orange Accent #F97316 */
+    --accent-foreground: 0 0% 100%; /* White */
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --border: 250 20% 88%; /* Border Color */
+    --input: 250 20% 88%; /* Border Color for input */
+    --ring: 250 50% 45%; /* Primary Purple for ring */
 
     --radius: 0.5rem;
+
+    /* Custom colors from plan.md */
+    --text-dark: 247 18% 17%;    /* #1A1F2C */
+    --text-body: 240 6% 41%;      /* #4A4A68 - Adjusted HSL from #4A4A68 */
+    --warm-surface-light: 250 100% 94%; /* #E5DEFF */
+    --warm-surface-alt: 264 88% 89%; /* #D6BCFA */
+    --cool-gradient-start: 258 31% 50%; /* #6E59A5 */
+    --cool-gradient-middle: 258 90% 66%; /* #8B5CF6 */
+    --cool-gradient-end: 24 95% 53%; /* #F97316 */
+
+    /* Font Variable */
+    --font-sans: 'Inter', sans-serif;
   }
 
   .dark {
+    /* Dark theme variables can be updated later if needed */
+    /* Keeping existing dark theme for now */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
@@ -76,6 +105,11 @@ body {
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
+
+    /* Custom dark theme variables (if needed) */
+    --text-dark: 210 40% 98%;    /* Example: Light text for dark mode */
+    --text-body: 215 20.2% 65.1%; /* Example: Muted light text */
+    /* Adjust other custom colors for dark mode as needed */
   }
 }
 
@@ -85,6 +119,7 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans); /* Use CSS variable */
   }
 }
 
