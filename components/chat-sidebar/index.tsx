@@ -92,18 +92,38 @@ export default function ChatSidebar(props: ChatSidebarProps) {
           onCollapse={() => setIsCollapsed(true)} 
         />
         
-        <MessageList
-          messages={props.messages}
-          isGenerating={props.isGenerating}
-          containerRef={props.chatContainerRef}
-        />
-        
-        <InputBar
-          value={props.inputMessage}
-          onChange={props.setInputMessage}
-          onSubmit={props.handleSendMessage}
-          isGenerating={props.isGenerating}
-        />
+        {props.messages.length === 0 ? (
+          // Render InputBar at the top when chat is empty
+          <>
+            <InputBar
+              value={props.inputMessage}
+              onChange={props.setInputMessage}
+              onSubmit={props.handleSendMessage}
+              isGenerating={props.isGenerating}
+            />
+            {/* Optional: Placeholder for empty message area */}
+            <div className="flex-1 flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900">
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                Start the conversation
+              </span>
+            </div>
+          </>
+        ) : (
+          // Render MessageList first, then InputBar when chat has messages
+          <>
+            <MessageList
+              messages={props.messages}
+              isGenerating={props.isGenerating}
+              containerRef={props.chatContainerRef}
+            />
+            <InputBar
+              value={props.inputMessage}
+              onChange={props.setInputMessage}
+              onSubmit={props.handleSendMessage}
+              isGenerating={props.isGenerating}
+            />
+          </>
+        )}
       </div>
     </ResizablePanel>
   );
