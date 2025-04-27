@@ -63,16 +63,22 @@ const config = {
         brand: {
           DEFAULT: "hsl(var(--brand))",
           foreground: "hsl(var(--brand-foreground))",
+          primary: "#7C3AED",
+          secondary: "#A855F7",
         },
         highlight: {
           DEFAULT: "hsl(var(--highlight))",
           foreground: "hsl(var(--highlight-foreground))",
         },
       },
+      backgroundImage: {
+        "chat-gradient": "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        chat: "0.75rem",
       },
       keyframes: {
         "accordion-down": {
@@ -149,6 +155,7 @@ const config = {
         ],
         sans: [
           "var(--font-sans)",
+          "var(--font-inter)",
           "ui-sans-serif",
           "-apple-system",
           "BlinkMacSystemFont",
@@ -162,6 +169,12 @@ const config = {
           "Segoe UI Symbol",
           "Noto Color Emoji",
         ],
+      },
+      transitionProperty: {
+        width: "width",
+      },
+      boxShadow: {
+        chat: "0 1px 3px rgba(0,0,0,.08)",
       },
     },
   },
