@@ -3,6 +3,7 @@ import type React from "react";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
+import Navbar from "@/components/landing/Navbar";
 
 // Configure Inter font
 const inter = Inter({
@@ -24,7 +25,10 @@ export default function RootLayout({
           <meta name="description" content="AI-powered document editor" />
           <link rel="icon" href="/favicon.png" sizes="any" />
         </head>
-        <body>{children}</body>
+        <body>
+          <Navbar />
+          <main>{children}</main>
+        </body>
       </html>
     </ClerkWrapper>
   );

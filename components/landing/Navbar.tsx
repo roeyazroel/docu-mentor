@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,16 +37,18 @@ const Navbar = () => {
     };
   }, []);
 
+  // Navigation items definitions
   const baseNavItems = [
     { href: '#features', label: 'Features' },
     { href: '#pricing', label: 'Pricing' },
   ];
 
+  // Updated href for logged-in users
   const loggedInNavItems = [
-    ...baseNavItems,
-    { href: '/editor', label: 'My documents' }, // Updated link for logged in users
+    { href: '/documents', label: 'My documents' },
   ];
 
+  // Show base items and sign-in when logged out
   const loggedOutNavItems = [
     ...baseNavItems,
     { href: '/sign-in', label: 'Sign In' },
@@ -55,12 +57,11 @@ const Navbar = () => {
   const handleSignOut = async () => {
     await signOut();
     router.push('/');
-    setIsMobileMenuOpen(false); // Close mobile menu on sign out
+    setIsMobileMenuOpen(false);
   };
 
   const userInitials = user?.firstName?.[0] || user?.lastName?.[0] || 'U';
 
-  // Show loading state or nothing until Clerk is loaded
   if (!isLoaded) {
     return (
         <header className={cn('fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-20', isScrolled ? 'glass shadow-md' : 'bg-transparent')}>
@@ -76,20 +77,17 @@ const Navbar = () => {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-20',
         isScrolled ? 'glass shadow-md' : 'bg-transparent border-b border-transparent'
       )}
     >
-      <div className="container mx-auto px-6 flex h-20 items-center justify-between max-w-[1400px]">
+      <div className="container mx-auto px-6 flex h-full items-center justify-between max-w-[1400px]">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-md bg-cool-gradient flex items-center justify-center text-white font-bold text-lg">
             D
           </div>
-          <span className={cn(
-            'font-bold text-xl hidden sm:inline',
-             isScrolled ? 'text-foreground' : 'text-white'
-          )}>
+          <span className="font-bold text-xl sm:inline text-foreground">
             Documentor
           </span>
         </Link>
@@ -100,10 +98,7 @@ const Navbar = () => {
             <Link
               key={item.label}
               href={item.href}
-              className={cn(
-                'text-base font-medium transition-colors hover:text-primary',
-                isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/80'
-              )}
+              className="text-base font-medium text-foreground hover:text-primary transition-colors"
             >
               {item.label}
             </Link>
@@ -135,7 +130,7 @@ const Navbar = () => {
                <Button variant="default" size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
                  Try for free
                </Button>
-            </Link>
+             </Link>
           )}
         </nav>
 
@@ -143,23 +138,14 @@ const Navbar = () => {
         <div className="md:hidden">
            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className={cn(isScrolled ? 'text-foreground' : 'text-white', 'hover:bg-white/10')}>
+              <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted/50">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-background p-6 flex flex-col">
-              <div className="flex justify-between items-center mb-8">
-                <Link href="/" className="flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
-                  <div className="w-8 h-8 rounded-md bg-cool-gradient flex items-center justify-center text-white font-bold text-lg"> D </div>
-                  <span className="font-bold text-xl text-foreground"> Documentor </span>
-                </Link>
-                <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
-                   <X className="h-6 w-6 text-muted-foreground" />
-                   <span className="sr-only">Close menu</span>
-                </Button>
-              </div>
-              <nav className="flex flex-col gap-4 flex-grow">
+              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+              <nav className="flex flex-col gap-4 flex-grow pt-8">
                 {currentNavItems.map((item) => (
                   <Link
                     key={item.label}
