@@ -1,17 +1,8 @@
 import ClerkWrapper from "@/components/clerkWrapper";
+import Navbar from "@/components/landing/Navbar";
 import { LiveBlocksWrapper } from "@/components/liveblocks/providers";
 import type React from "react";
 import "./globals.css";
-import { Inter } from "next/font/google";
-import { cn } from "@/lib/utils";
-import Navbar from "@/components/landing/Navbar";
-
-// Configure Inter font
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
 
 export default function RootLayout({
   children,
@@ -20,17 +11,16 @@ export default function RootLayout({
 }) {
   return (
     <ClerkWrapper>
-      <html lang="en" suppressHydrationWarning className={cn("antialiased", inter.variable)}>
-        <head>
-          <title>Documentor</title>
-          <meta name="description" content="AI-powered document editor" />
-          <link rel="icon" href="/favicon.png" sizes="any" />
-        </head>
-        <body>
+      <LiveBlocksWrapper>
+        <html lang="en" suppressHydrationWarning>
+          <head>
+            <title>DocuMentor</title>
+            <meta name="description" content="AI-powered document editor" />
+          </head>
           <Navbar />
-          <main>{children}</main>
-        </body>
-      </html>
+          <body>{children}</body>
+        </html>
+      </LiveBlocksWrapper>
     </ClerkWrapper>
   );
 }
