@@ -36,18 +36,22 @@ const Hero = () => {
             <p className="text-lg md:text-xl text-white/80 max-w-lg">
               AI agent edits inline with full document context, providing suggestions that save you time and boost productivity.
             </p>
-            <Link href={ctaLink} aria-disabled={!isLoaded}>
-              <Button
-                size="lg"
-                className={cn(
-                  "bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-3 text-lg",
-                  !isLoaded && "opacity-50 cursor-not-allowed"
-                )}
-                disabled={!isLoaded}
-              >
-                Start Writing Free
-              </Button>
-            </Link>
+            {/* Wrap Button and Text for Flex Layout */}
+            <div className="flex flex-col items-center md:items-start md:flex-row md:items-center">
+              <Link href={ctaLink} aria-disabled={!isLoaded}>
+                <Button
+                  size="lg"
+                  className={cn(
+                    "bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-3 text-lg",
+                    !isLoaded && "opacity-50 cursor-not-allowed"
+                  )}
+                  disabled={!isLoaded}
+                >
+                  Start Writing Free
+                </Button>
+              </Link>
+              <p className="text-sm text-white/70 mt-2 md:mt-0 md:ml-4">No credit card required</p>
+            </div>
           </div>
 
           {/* Right Column: Demo Area */}
