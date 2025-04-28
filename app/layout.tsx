@@ -1,4 +1,5 @@
 import ClerkWrapper from "@/components/clerkWrapper";
+import { LiveBlocksWrapper } from "@/components/liveblocks/providers";
 import type React from "react";
 import "./globals.css";
 
@@ -9,13 +10,15 @@ export default function RootLayout({
 }) {
   return (
     <ClerkWrapper>
-      <html lang="en" suppressHydrationWarning>
-        <head>
-          <title>DocuMentor</title>
-          <meta name="description" content="AI-powered document editor" />
-        </head>
-        <body>{children}</body>
-      </html>
+      <LiveBlocksWrapper>
+        <html lang="en" suppressHydrationWarning>
+          <head>
+            <title>DocuMentor</title>
+            <meta name="description" content="AI-powered document editor" />
+          </head>
+          <body>{children}</body>
+        </html>
+      </LiveBlocksWrapper>
     </ClerkWrapper>
   );
 }
