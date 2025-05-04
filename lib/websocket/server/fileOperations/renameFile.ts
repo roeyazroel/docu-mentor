@@ -8,7 +8,116 @@ import { Client, Message, fsTree } from "../types";
 import { broadcast, broadcastToOrganization, getOrgId } from "../utils";
 
 /**
- * Handles file renaming operation
+ * Core file renaming logic that can be used with or without WebSockets
+ */
+export async function renameFile(
+  fileId: string,
+  newName: string,
+  organizationId: string,
+  userId: string
+): Promise<{ success: boolean; fileData: any }> {
+  if (!fileId) {
+    console.log(`[rename_file] Missing file ID in org: ${organizationId}`);
+    return { success: false, fileData: null };
+  }
+
+  if (!newName) {
+    console.log(
+      `[rename_file] Missing new name for file: ${fileId} in org: ${organizationId}`
+    );
+    return { success: false, fileData: null };
+  }
+
+  try {
+    // Get file from database
+    const fileNode = await getNodeById(fileId);
+
+    if (fileNode && fileNode.type === "file") {
+      const oldName = fileNode.name;
+
+      console.log(
+        `[rename_file] Renaming file: ${fileId} from "${oldName}" to "${newName}" in org: ${organizationId}`
+      );
+
+      // Calculate the new path
+      let newPath = "";
+      if (fileNode.parent_id) {
+        const parentPath = await getNodePath(fileNode.parent_id);
+        newPath = `${parentPath}/${newName}`;
+      } else {
+        newPath = `/${newName}`;
+      }
+
+      // Update the node in the database
+      const updatedNode = await updateNode(fileId, {
+        name: newName,
+        path: newPath,
+      });
+
+      if (updatedNode) {
+        // Log access
+        await logFileAccess(fileId, userId, "rename");
+
+        // For backward compatibility with in-memory system
+        if (fsTree[organizationId] && fsTree[organizationId][fileId]) {
+          // Update name
+          fsTree[organizationId][fileId].name = newName;
+        }
+
+        return {
+          success: true,
+          fileData: {
+            id: fileId,
+            oldName,
+            newName,
+            parentId: fileNode.parent_id
+          }
+        };
+      } else {
+        console.log(
+          `[rename_file] Failed to update file in database: ${fileId}`
+        );
+        return { success: false, fileData: null };
+      }
+    } else if (fsTree[organizationId] && fsTree[organizationId][fileId]?.type === "file") {
+      // Fallback to in-memory if not in database
+      console.log(
+        `[rename_file] File not in database, using in-memory: ${fileId}`
+      );
+
+      const file = fsTree[organizationId][fileId];
+      const oldName = file.name;
+
+      console.log(
+        `[rename_file] Renaming file: ${fileId} from "${oldName}" to "${newName}" in org: ${organizationId}`
+      );
+
+      // Update name
+      file.name = newName;
+
+      return {
+        success: true,
+        fileData: {
+          id: fileId,
+          oldName,
+          newName,
+          parentId: file.parentId
+        }
+      };
+    } else {
+      console.log(
+        `[rename_file] Failed to rename file: ${fileId} in org: ${organizationId} - not found`
+      );
+      return { success: false, fileData: null };
+    }
+  } catch (error) {
+    console.error(`[rename_file] Error renaming file: ${fileId}`, error);
+    return { success: false, fileData: null };
+  }
+}
+
+/**
+ * Handles file renaming operation via WebSocket
  */
 export async function handleRenameFile(
   ws: Client,
@@ -18,141 +127,44 @@ export async function handleRenameFile(
   const orgId = getOrgId(msg);
   const userId = ws.userId || "anonymous";
 
-  // Guard against undefined values
-  if (!oldPath) {
-    console.log(`[rename_file] Missing file ID in org: ${orgId}`);
+  if (!oldPath || !name) {
+    console.log(`[rename_file] Missing required parameters in org: ${orgId}`);
     return;
   }
 
-  if (!name) {
-    console.log(
-      `[rename_file] Missing new name for file: ${oldPath} in org: ${orgId}`
-    );
-    return;
-  }
+  const result = await renameFile(oldPath, name, orgId, userId);
 
-  try {
-    // Get file from database
-    const fileNode = await getNodeById(oldPath);
-    const fileId = oldPath;
+  if (result.success && result.fileData) {
+    const { id: fileId, oldName, newName, parentId } = result.fileData;
 
-    if (fileNode && fileNode.type === "file") {
-      const oldName = fileNode.name;
+    // Create rename event
+    const renameMsg = {
+      type: "file_renamed",
+      id: fileId,
+      oldName: oldName,
+      newName: newName,
+      parentId: parentId,
+      organizationId: orgId,
+      lastUpdated: new Date().toISOString(),
+    };
 
-      console.log(
-        `[rename_file] Renaming file: ${fileId} from "${oldName}" to "${name}" in org: ${orgId}`
-      );
+    // Broadcast to specific file room if anyone is viewing it
+    broadcast(fileId, renameMsg, null);
 
-      // Calculate the new path
-      let newPath = "";
-      if (fileNode.parent_id) {
-        const parentPath = await getNodePath(fileNode.parent_id);
-        newPath = `${parentPath}/${name}`;
-      } else {
-        newPath = `/${name}`;
-      }
+    // Broadcast to all organization clients including the sender
+    broadcastToOrganization(orgId, renameMsg, null);
 
-      // Update the node in the database
-      const updatedNode = await updateNode(fileId, {
-        name: name,
-        path: newPath,
-      });
+    // Also send the traditional file_updated for backward compatibility
+    const updateMsg = {
+      type: "file_updated",
+      id: fileId,
+      name: newName,
+      parentId: parentId,
+      organizationId: orgId,
+      lastUpdated: new Date().toISOString(),
+    };
 
-      if (updatedNode) {
-        // Log access
-        await logFileAccess(fileId, userId, "rename");
-
-        // For backward compatibility with in-memory system
-        if (fsTree[orgId] && fsTree[orgId][fileId]) {
-          // Update name
-          fsTree[orgId][fileId].name = name;
-        }
-
-        // Create rename event
-        const renameMsg = {
-          type: "file_renamed",
-          id: fileId,
-          oldName: oldName,
-          newName: name,
-          parentId: fileNode.parent_id,
-          organizationId: orgId,
-          lastUpdated: new Date().toISOString(),
-        };
-
-        // Broadcast to specific file room if anyone is viewing it
-        broadcast(fileId, renameMsg, null);
-
-        // Broadcast to all organization clients including the sender
-        broadcastToOrganization(orgId, renameMsg, null);
-
-        // Also send the traditional file_updated for backward compatibility
-        const updateMsg = {
-          type: "file_updated",
-          id: fileId,
-          name: name,
-          parentId: fileNode.parent_id,
-          organizationId: orgId,
-          lastUpdated: new Date().toISOString(),
-        };
-
-        // Broadcast update to all organization clients
-        broadcastToOrganization(orgId, updateMsg, null);
-      } else {
-        console.log(
-          `[rename_file] Failed to update file in database: ${fileId}`
-        );
-      }
-    } else if (fsTree[orgId] && fsTree[orgId][oldPath]?.type === "file") {
-      // Fallback to in-memory if not in database
-      console.log(
-        `[rename_file] File not in database, using in-memory: ${fileId}`
-      );
-
-      const file = fsTree[orgId][fileId];
-      const oldName = file.name;
-
-      console.log(
-        `[rename_file] Renaming file: ${fileId} from "${oldName}" to "${name}" in org: ${orgId}`
-      );
-
-      // Update name
-      file.name = name;
-
-      // Create rename event
-      const renameMsg = {
-        type: "file_renamed",
-        id: fileId,
-        oldName: oldName,
-        newName: name,
-        parentId: file.parentId,
-        organizationId: orgId,
-        lastUpdated: new Date().toISOString(),
-      };
-
-      // Broadcast to specific file room if anyone is viewing it
-      broadcast(fileId, renameMsg, null);
-
-      // Broadcast to all organization clients including the sender
-      broadcastToOrganization(orgId, renameMsg, null);
-
-      // Also send the traditional file_updated for backward compatibility
-      const updateMsg = {
-        type: "file_updated",
-        id: fileId,
-        name: file.name,
-        parentId: file.parentId,
-        organizationId: orgId,
-        lastUpdated: new Date().toISOString(),
-      };
-
-      // Broadcast update to all organization clients
-      broadcastToOrganization(orgId, updateMsg, null);
-    } else {
-      console.log(
-        `[rename_file] Failed to rename file: ${oldPath} in org: ${orgId} - not found`
-      );
-    }
-  } catch (error) {
-    console.error(`[rename_file] Error renaming file: ${oldPath}`, error);
+    // Broadcast update to all organization clients
+    broadcastToOrganization(orgId, updateMsg, null);
   }
 }

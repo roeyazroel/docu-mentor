@@ -5,6 +5,7 @@ import { EditorContextProvider } from "@/context/EditorContext";
 import { useUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import React from "react";
+
 export default function ClientLayout({
   children,
 }: {

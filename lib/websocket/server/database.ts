@@ -262,6 +262,10 @@ export async function getNodesByParentId(
     return [];
   }
 
+  console.log(
+    `[getNodesByParentId] Found ${data.length} children for parent: ${parentId}`
+  );
+
   return data;
 }
 
@@ -669,4 +673,24 @@ export async function revertFileToVersion(
     content: result.content,
     revertedFromVersion: targetVersion,
   };
+}
+
+/**
+ * Get all users in an organization
+ */
+export async function getUsersInOrganization(organizationId: string) {
+  const { data, error } = await supabase
+    .from("organization_members")
+    .select("users (id, name, email, avatar_url)")
+    .eq("organization_id", organizationId);
+
+  if (error) {
+    console.error(
+      `[getUsersInOrganization] Error fetching users: ${organizationId}`,
+      error
+    );
+    return [];
+  }
+
+  return data;
 }

@@ -1,30 +1,106 @@
-import React from 'react';
-import { FileText } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+"use client";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { File, FilePlus, FolderPlus } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 interface EmptyStateProps {
-  onNewDocumentClick: () => void;
-  title?: string;
-  message?: string;
+  onNewDocumentClick: (name?: string) => void;
+  onNewFolderClick?: (name: string) => void;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({
+export default function EmptyState({
   onNewDocumentClick,
-  title = "No Documents Found",
-  message = "It looks like you haven't created any documents yet, or none match your current search/filter."
-}) => {
+  onNewFolderClick,
+}: EmptyStateProps) {
+  const searchParams = useSearchParams();
+  const folderParam = searchParams.get("folder");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [folderName, setFolderName] = useState("");
+
+  const isInFolder = !!folderParam;
+
+  const handleCreateFolder = () => {
+    if (folderName.trim() && onNewFolderClick) {
+      onNewFolderClick(folderName);
+      setFolderName("");
+      setIsDialogOpen(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 px-6 bg-white rounded-lg shadow-sm border border-gray-200">
-      <div className="p-4 rounded-full bg-[#E5DEFF] mb-4">
-        <FileText className="h-10 w-10 text-[#6E59A5]" />
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-6">
+        <File className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h3 className="text-xl font-semibold text-[#1A1F2C] mb-2">{title}</h3>
-      <p className="text-base text-[#4A4A68] max-w-md mb-6">{message}</p>
-      <Button onClick={onNewDocumentClick} className="bg-gradient-to-r from-[#6E59A5] via-[#8B5CF6] to-[#F97316] hover:opacity-90 text-white">
-        Create Your First Document
-      </Button>
+
+      <h3 className="text-xl font-medium mb-2">
+        {isInFolder ? "This folder is empty" : "No documents yet"}
+      </h3>
+
+      <p className="text-muted-foreground max-w-md mb-8">
+        {isInFolder
+          ? "Create your first document or folder in this location."
+          : "Create your first document to get started with your project."}
+      </p>
+
+      <div className="flex gap-4">
+        <Button onClick={() => onNewDocumentClick()}>
+          <FilePlus className="mr-2 h-4 w-4" />
+          New Document
+        </Button>
+
+        {onNewFolderClick && (
+          <>
+            <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
+              <FolderPlus className="mr-2 h-4 w-4" />
+              New Folder
+            </Button>
+
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Folder</DialogTitle>
+                  <DialogDescription>
+                    Enter a name for your new folder.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <Label htmlFor="empty-folder-name">Folder name</Label>
+                  <Input
+                    id="empty-folder-name"
+                    placeholder="My Folder"
+                    value={folderName}
+                    onChange={(e) => setFolderName(e.target.value)}
+                    className="mt-2"
+                    autoFocus
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreateFolder}>Create</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
+      </div>
     </div>
   );
-};
-
-export default EmptyState; 
+}

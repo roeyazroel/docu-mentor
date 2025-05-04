@@ -1,12 +1,10 @@
-import React from 'react';
-
 // Import the new landing page components
-import Navbar from '@/components/landing/Navbar';
-import Hero from '@/components/landing/Hero';
-import SocialProof from '@/components/landing/SocialProof';
-import Features from '@/components/landing/Features';
-import TestimonialCarousel from '@/components/landing/TestimonialCarousel';
-import Footer from '@/components/landing/Footer';
+import Features from "@/components/landing/Features";
+import Footer from "@/components/landing/Footer";
+import Hero from "@/components/landing/Hero";
+import Navbar from "@/components/landing/Navbar";
+import SocialProof from "@/components/landing/SocialProof";
+import TestimonialCarousel from "@/components/landing/TestimonialCarousel";
 
 export default function LandingPage() {
   return (

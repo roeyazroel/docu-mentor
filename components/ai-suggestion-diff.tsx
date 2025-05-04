@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { useInlineDiff } from "@/hooks/useInlineDiff";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { InlineDiffRenderer } from "./diff/InlineDiffRenderer";
 
 interface AiSuggestionDiffProps {
@@ -53,17 +54,19 @@ export default function AiSuggestionDiff({
   };
 
   return (
-    <Card className="p-4 shadow-md border border-border">
-      <InlineDiffRenderer
-        diffChanges={diffChanges}
-        onAccept={acceptChange}
-        onReject={rejectChange}
-        onAcceptAll={handleAcceptAll}
-        onRejectAll={handleRejectAll}
-        onFinalize={handleFinalize}
-        hasChanges={hasChanges}
-        allChangesDecided={allChangesDecided}
-      />
-    </Card>
+    <ScrollArea className="h-[80vh]">
+      <Card className="p-4 shadow-md border border-border">
+        <InlineDiffRenderer
+          diffChanges={diffChanges}
+          onAccept={acceptChange}
+          onReject={rejectChange}
+          onAcceptAll={handleAcceptAll}
+          onRejectAll={handleRejectAll}
+          onFinalize={handleFinalize}
+          hasChanges={hasChanges}
+          allChangesDecided={allChangesDecided}
+        />
+      </Card>
+    </ScrollArea>
   );
 }

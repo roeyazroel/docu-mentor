@@ -10,7 +10,7 @@ import { Copy, FileDown, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import React from "react";
 
 interface DocumentActionMenuProps {
-  onCopy: () => void;
+  onCopy?: () => void;
   onDelete: () => void;
   onRename?: () => void;
   onMove?: () => void;
@@ -31,10 +31,12 @@ const DocumentActionMenu: React.FC<DocumentActionMenuProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onCopy}>
-          <Copy className="mr-2 h-4 w-4" />
-          <span>Make a copy</span>
-        </DropdownMenuItem>
+        {onCopy && (
+          <DropdownMenuItem onClick={onCopy}>
+            <Copy className="mr-2 h-4 w-4" />
+            <span>Make a copy</span>
+          </DropdownMenuItem>
+        )}
         {onRename && (
           <DropdownMenuItem onClick={onRename}>
             <Pencil className="mr-2 h-4 w-4" />

@@ -1,48 +1,35 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { LayoutGrid, List } from 'lucide-react';
-import { cn } from '@/lib/utils';
+"use client";
 
-export type ViewMode = 'grid' | 'list';
+import { ViewMode } from "@/app/(app)/documents/types";
+import { Toggle } from "@/components/ui/toggle";
+import { LayoutGrid, List } from "lucide-react";
 
 interface ViewToggleProps {
-  currentView: ViewMode;
-  onViewChange: (view: ViewMode) => void;
+  current: ViewMode;
+  onChange: (value: ViewMode) => void;
 }
 
-const ViewToggle: React.FC<ViewToggleProps> = ({ currentView, onViewChange }) => {
+export default function ViewToggle({ current, onChange }: ViewToggleProps) {
   return (
-    <div className="flex items-center space-x-1 bg-gray-100 p-0.5 rounded-lg">
-      <Button
-        variant="ghost"
+    <div className="flex items-center space-x-1 border rounded-md">
+      <Toggle
+        variant="outline"
         size="sm"
-        onClick={() => onViewChange('grid')}
-        className={cn(
-          'px-3 py-1 h-8 rounded-md',
-          currentView === 'grid'
-            ? 'bg-white text-[#6E59A5] shadow-sm'
-            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
-        )}
-        aria-label="Grid View"
+        pressed={current === "grid"}
+        onPressedChange={() => onChange("grid")}
+        aria-label="Grid view"
       >
         <LayoutGrid className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
+      </Toggle>
+      <Toggle
+        variant="outline"
         size="sm"
-        onClick={() => onViewChange('list')}
-        className={cn(
-          'px-3 py-1 h-8 rounded-md',
-          currentView === 'list'
-            ? 'bg-white text-[#6E59A5] shadow-sm'
-            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
-        )}
-        aria-label="List View"
+        pressed={current === "list"}
+        onPressedChange={() => onChange("list")}
+        aria-label="List view"
       >
         <List className="h-4 w-4" />
-      </Button>
+      </Toggle>
     </div>
   );
-};
-
-export default ViewToggle; 
+}

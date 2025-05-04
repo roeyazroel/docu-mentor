@@ -9,49 +9,45 @@ import { Client, Message, fsTree } from "../types";
 import { broadcastToOrganization, getOrgId } from "../utils";
 
 /**
- * Handles folder moving operation
+ * Core folder moving logic that can be used with or without WebSockets
  */
-export async function handleMoveFolder(
-  ws: Client,
-  msg: Message
-): Promise<void> {
-  const { oldPath, parentId } = msg;
-  const orgId = getOrgId(msg);
-  const userId = ws.userId || "anonymous";
-
-  // Guard against undefined values
-  if (!oldPath) {
-    console.log(`[move_folder] Missing folder ID in org: ${orgId}`);
-    return;
+export async function moveFolder(
+  folderId: string,
+  newParentId: string | null,
+  organizationId: string,
+  userId: string
+): Promise<{ success: boolean; folderData: any }> {
+  if (!folderId) {
+    console.log(`[move_folder] Missing folder ID in org: ${organizationId}`);
+    return { success: false, folderData: null };
   }
 
-  if (parentId === undefined) {
+  if (newParentId === undefined) {
     console.log(
-      `[move_folder] Missing parentId for folder: ${oldPath} in org: ${orgId}`
+      `[move_folder] Missing parentId for folder: ${folderId} in org: ${organizationId}`
     );
-    return;
+    return { success: false, folderData: null };
   }
 
   try {
     // Get folder from database
-    const folderNode = await getNodeById(oldPath);
-    const folderId = oldPath;
+    const folderNode = await getNodeById(folderId);
 
     if (folderNode && folderNode.type === "folder") {
       const oldParentId = folderNode.parent_id;
 
       // Only proceed if this is actually a move (parent changed)
-      if (parentId !== oldParentId) {
+      if (newParentId !== oldParentId) {
         console.log(
-          `[move_folder] Moving folder: ${folderId} from parent ${oldParentId} to ${parentId} in org: ${orgId}`
+          `[move_folder] Moving folder: ${folderId} from parent ${oldParentId} to ${newParentId} in org: ${organizationId}`
         );
 
         // Validate that we're not creating a circular reference
-        if (parentId === folderId) {
+        if (newParentId === folderId) {
           console.log(
             `[move_folder] Cannot move folder to itself: ${folderId}`
           );
-          return;
+          return { success: false, folderData: null };
         }
 
         // Check if the parent is a child of this folder (would create circular reference)
@@ -67,24 +63,24 @@ export async function handleMoveFolder(
           return isChildOfFolder(parentNode.parent_id, targetFolderId);
         };
 
-        if (parentId && (await isChildOfFolder(parentId, folderId))) {
+        if (newParentId && (await isChildOfFolder(newParentId, folderId))) {
           console.log(
             `[move_folder] Cannot move folder to its own child: ${folderId}`
           );
-          return;
+          return { success: false, folderData: null };
         }
 
         // Generate new path based on parent
         let newBasePath = "";
-        if (parentId) {
+        if (newParentId) {
           // If has parent, get parent path and append
-          const parentNode = await getNodeById(parentId);
+          const parentNode = await getNodeById(newParentId);
           if (parentNode) {
-            const parentPath = await getNodePath(parentId);
+            const parentPath = await getNodePath(newParentId);
             newBasePath = `${parentPath}/${folderNode.name}`;
           } else {
-            console.log(`[move_folder] Parent node ${parentId} not found`);
-            return;
+            console.log(`[move_folder] Parent node ${newParentId} not found`);
+            return { success: false, folderData: null };
           }
         } else {
           // If moving to root
@@ -93,7 +89,7 @@ export async function handleMoveFolder(
 
         // Update folder in database
         const updatedNode = await updateNode(folderId, {
-          parent_id: parentId === null ? undefined : parentId,
+          parent_id: newParentId === null ? undefined : newParentId,
           path: newBasePath,
         });
 
@@ -103,7 +99,7 @@ export async function handleMoveFolder(
 
           // Update paths for all children
           const updateChildPaths = async (nodeId: string, basePath: string) => {
-            const children = await getNodesByParentId(nodeId, orgId);
+            const children = await getNodesByParentId(nodeId, organizationId);
 
             for (const child of children) {
               const childPath = `${basePath}/${child.name}`;
@@ -120,125 +116,179 @@ export async function handleMoveFolder(
           await updateChildPaths(folderId, newBasePath);
 
           // For backward compatibility with in-memory system
-          if (fsTree[orgId] && fsTree[orgId][folderId]) {
-            const folder = fsTree[orgId][folderId];
+          if (fsTree[organizationId] && fsTree[organizationId][folderId]) {
+            const folder = fsTree[organizationId][folderId];
 
             // Remove from old parent's children array
-            if (oldParentId && fsTree[orgId][oldParentId]?.children) {
-              fsTree[orgId][oldParentId].children = fsTree[orgId][
-                oldParentId
-              ].children.filter((id) => id !== folderId);
+            if (oldParentId && fsTree[organizationId][oldParentId]?.children) {
+              fsTree[organizationId][oldParentId].children = fsTree[
+                organizationId
+              ][oldParentId].children.filter((id) => id !== folderId);
             }
 
             // Add to new parent's children array
-            if (parentId && fsTree[orgId][parentId]) {
-              if (!fsTree[orgId][parentId].children) {
-                fsTree[orgId][parentId].children = [];
+            if (newParentId && fsTree[organizationId][newParentId]) {
+              if (!fsTree[organizationId][newParentId].children) {
+                fsTree[organizationId][newParentId].children = [];
               }
-              fsTree[orgId][parentId].children.push(folderId);
+              fsTree[organizationId][newParentId].children.push(folderId);
             }
 
             // Update folder's parentId
-            folder.parentId = parentId;
+            folder.parentId = newParentId;
           }
 
-          // Create move event
-          const moveMsg = {
-            type: "folder_moved",
-            id: folderId,
-            name: folderNode.name,
-            oldParentId: oldParentId,
-            newParentId: parentId,
-            organizationId: orgId,
+          return {
+            success: true,
+            folderData: {
+              id: folderId,
+              name: folderNode.name,
+              oldParentId,
+              newParentId,
+            },
           };
-
-          // Broadcast to all organization clients including the sender
-          broadcastToOrganization(orgId, moveMsg, null);
-
-          // Also send the traditional folder_updated for backward compatibility
-          const updateMsg = {
-            type: "folder_updated",
-            id: folderId,
-            name: folderNode.name,
-            parentId: parentId,
-            organizationId: orgId,
-          };
-
-          // Broadcast update to all organization clients
-          broadcastToOrganization(orgId, updateMsg, null);
         } else {
           console.log(
             `[move_folder] Failed to update folder in database: ${folderId}`
           );
+          return { success: false, folderData: null };
         }
       } else {
         console.log(
-          `[move_folder] No change in parent for folder: ${folderId} in org: ${orgId}`
+          `[move_folder] No change in parent for folder: ${folderId} in org: ${organizationId}`
         );
+        return { success: false, folderData: null };
       }
-    } else if (fsTree[orgId] && fsTree[orgId][oldPath]?.type === "folder") {
+    } else if (
+      fsTree[organizationId] &&
+      fsTree[organizationId][folderId]?.type === "folder"
+    ) {
       // Fallback to in-memory
       console.log(
         `[move_folder] Folder not in database, using in-memory: ${folderId}`
       );
-      const folder = fsTree[orgId][folderId];
+      const folder = fsTree[organizationId][folderId];
       const oldParentId = folder.parentId;
 
       // Only proceed if this is actually a move (parent changed)
-      if (parentId !== oldParentId) {
+      if (newParentId !== oldParentId) {
+        // Validate that we're not creating a circular reference
+        if (newParentId === folderId) {
+          console.log(
+            `[move_folder] Cannot move folder to itself: ${folderId}`
+          );
+          return { success: false, folderData: null };
+        }
+
+        // Check if newParentId is a child of this folder (would create circular reference)
+        const isChildOfFolder = (
+          checkId: string,
+          targetFolderId: string
+        ): boolean => {
+          if (checkId === targetFolderId) return true;
+
+          const node = fsTree[organizationId][checkId];
+          if (!node || !node.parentId) return false;
+
+          return isChildOfFolder(node.parentId, targetFolderId);
+        };
+
+        if (newParentId && isChildOfFolder(newParentId, folderId)) {
+          console.log(
+            `[move_folder] Cannot move folder to its own child: ${folderId}`
+          );
+          return { success: false, folderData: null };
+        }
+
         // Remove from old parent's children array
-        if (oldParentId && fsTree[orgId][oldParentId]?.children) {
-          fsTree[orgId][oldParentId].children = fsTree[orgId][
+        if (oldParentId && fsTree[organizationId][oldParentId]?.children) {
+          fsTree[organizationId][oldParentId].children = fsTree[organizationId][
             oldParentId
           ].children.filter((id) => id !== folderId);
         }
 
         // Add to new parent's children array
-        if (parentId && fsTree[orgId][parentId]) {
-          if (!fsTree[orgId][parentId].children) {
-            fsTree[orgId][parentId].children = [];
+        if (newParentId && fsTree[organizationId][newParentId]) {
+          if (!fsTree[organizationId][newParentId].children) {
+            fsTree[organizationId][newParentId].children = [];
           }
-          fsTree[orgId][parentId].children.push(folderId);
+          fsTree[organizationId][newParentId].children.push(folderId);
         }
 
         // Update folder's parentId
-        folder.parentId = parentId;
+        folder.parentId = newParentId;
 
-        // Create move event
-        const moveMsg = {
-          type: "folder_moved",
-          id: folderId,
-          name: folder.name,
-          oldParentId: oldParentId,
-          newParentId: parentId,
-          organizationId: orgId,
+        return {
+          success: true,
+          folderData: {
+            id: folderId,
+            name: folder.name,
+            oldParentId,
+            newParentId,
+          },
         };
-
-        // Broadcast to all organization clients including the sender
-        broadcastToOrganization(orgId, moveMsg, null);
-
-        // Also send the traditional folder_updated for backward compatibility
-        const updateMsg = {
-          type: "folder_updated",
-          id: folderId,
-          name: folder.name,
-          parentId: folder.parentId,
-          organizationId: orgId,
-        };
-
-        // Broadcast update to all organization clients
-        broadcastToOrganization(orgId, updateMsg, null);
       } else {
         console.log(
-          `[move_folder] No change in parent for folder: ${folderId} in org: ${orgId}`
+          `[move_folder] No change in parent for folder: ${folderId} in org: ${organizationId}`
         );
+        return { success: false, folderData: null };
       }
     } else {
       console.log(
-        `[move_folder] Failed to move folder: ${oldPath} in org: ${orgId} - not found`
+        `[move_folder] Failed to move folder: ${folderId} in org: ${organizationId} - not found`
       );
+      return { success: false, folderData: null };
     }
   } catch (error) {
-    console.error(`[move_folder] Error moving folder: ${oldPath}`, error);
+    console.error(`[move_folder] Error moving folder: ${folderId}`, error);
+    return { success: false, folderData: null };
+  }
+}
+
+/**
+ * Handles folder moving operation via WebSocket
+ */
+export async function handleMoveFolder(
+  ws: Client,
+  msg: Message
+): Promise<void> {
+  const { oldPath, parentId } = msg;
+  const orgId = getOrgId(msg);
+  const userId = ws.userId || "anonymous";
+
+  if (!oldPath || parentId === undefined) {
+    console.log(`[move_folder] Missing required parameters in org: ${orgId}`);
+    return;
+  }
+
+  const result = await moveFolder(oldPath, parentId, orgId, userId);
+
+  if (result.success && result.folderData) {
+    const { id: folderId, name, oldParentId, newParentId } = result.folderData;
+
+    // Create move event
+    const moveMsg = {
+      type: "folder_moved",
+      id: folderId,
+      name: name,
+      oldParentId: oldParentId,
+      newParentId: newParentId,
+      organizationId: orgId,
+    };
+
+    // Broadcast to all organization clients including the sender
+    broadcastToOrganization(orgId, moveMsg, null);
+
+    // Also send the traditional folder_updated for backward compatibility
+    const updateMsg = {
+      type: "folder_updated",
+      id: folderId,
+      name: name,
+      parentId: newParentId,
+      organizationId: orgId,
+    };
+
+    // Broadcast update to all organization clients
+    broadcastToOrganization(orgId, updateMsg, null);
   }
 }

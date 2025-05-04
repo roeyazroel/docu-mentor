@@ -1,24 +1,41 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import ViewToggle, { type ViewMode } from './ViewToggle';
-import { FilePlus, Search } from 'lucide-react';
+"use client";
+
+import type { ViewMode } from "@/app/(app)/documents/types";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FolderPlus, Plus } from "lucide-react";
+import { useState } from "react";
+import ViewToggle from "./ViewToggle";
 
 interface ControlBarProps {
   searchQuery: string;
-  onSearchChange: (query: string) => void;
-  selectedCategory: string; // Or appropriate type
-  onCategoryChange: (category: string) => void;
+  onSearchChange: (value: string) => void;
+  selectedCategory: string;
+  onCategoryChange: (value: string) => void;
   currentView: ViewMode;
-  onViewChange: (view: ViewMode) => void;
-  onNewDocumentClick: () => void;
+  onViewChange: (value: ViewMode) => void;
+  onNewDocumentClick: (name?: string) => void;
+  onNewFolderClick: (name: string) => void;
+  parentId: string | null;
 }
 
-// Mock categories for the dropdown
-const mockCategories = ['All', 'Work', 'Design', 'Personal', 'Marketing'];
-
-const ControlBar: React.FC<ControlBarProps> = ({
+export default function ControlBar({
   searchQuery,
   onSearchChange,
   selectedCategory,
@@ -26,46 +43,135 @@ const ControlBar: React.FC<ControlBarProps> = ({
   currentView,
   onViewChange,
   onNewDocumentClick,
-}) => {
-  return (
-    <div className="mb-8 p-4 bg-white rounded-lg shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      {/* Left Section: New Doc + Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-grow">
-        <Button onClick={onNewDocumentClick} className="bg-[#F97316] hover:bg-orange-500 text-white">
-          <FilePlus className="mr-2 h-4 w-4" />
-          New Document
-        </Button>
-        <div className="relative flex-grow sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="search"
-            placeholder="Search documents..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
-            aria-label="Search documents"
-          />
-        </div>
-      </div>
+  onNewFolderClick,
+  parentId,
+}: ControlBarProps) {
+  // Folder dialog state
+  const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
+  const [folderName, setFolderName] = useState("");
 
-      {/* Right Section: Filter + View Toggle */}
-      <div className="flex items-center gap-4 justify-end">
-        {/* Category Filter Dropdown - Placeholder styling/functionality */}
+  // Document dialog state
+  const [isDocDialogOpen, setIsDocDialogOpen] = useState(false);
+  const [documentName, setDocumentName] = useState("");
+
+  const handleCreateFolder = () => {
+    if (folderName.trim()) {
+      onNewFolderClick(folderName);
+      setFolderName("");
+      setIsFolderDialogOpen(false);
+    }
+  };
+
+  const handleCreateDocument = () => {
+    if (documentName.trim()) {
+      const name = documentName.trim();
+      setDocumentName("");
+      setIsDocDialogOpen(false);
+      // Call the handler with the document name
+      onNewDocumentClick(name);
+    }
+  };
+
+  return (
+    <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:space-y-0 mb-8">
+      <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0 md:w-2/3">
+        <Input
+          placeholder="Search documents..."
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="md:w-1/2"
+        />
         <Select value={selectedCategory} onValueChange={onCategoryChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by category" />
+          <SelectTrigger className="md:w-1/3">
+            <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
-            {mockCategories.map(category => (
-              <SelectItem key={category} value={category.toLowerCase()}>{category}</SelectItem>
-            ))}
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="file">Documents</SelectItem>
+            <SelectItem value="folder">Folders</SelectItem>
           </SelectContent>
         </Select>
+      </div>
 
-        <ViewToggle currentView={currentView} onViewChange={onViewChange} />
+      <div className="flex items-center space-x-2">
+        <ViewToggle current={currentView} onChange={onViewChange} />
+
+        {/* New Folder Dialog */}
+        <Dialog open={isFolderDialogOpen} onOpenChange={setIsFolderDialogOpen}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsFolderDialogOpen(true)}
+          >
+            <FolderPlus className="h-4 w-4 mr-2" />
+            New Folder
+          </Button>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Folder</DialogTitle>
+              <DialogDescription>
+                Enter a name for your new folder.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Label htmlFor="name">Folder name</Label>
+              <Input
+                id="name"
+                placeholder="My Folder"
+                value={folderName}
+                onChange={(e) => setFolderName(e.target.value)}
+                className="mt-2"
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsFolderDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleCreateFolder}>Create</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* New Document Dialog */}
+        <Dialog open={isDocDialogOpen} onOpenChange={setIsDocDialogOpen}>
+          <Button onClick={() => setIsDocDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Document
+          </Button>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Document</DialogTitle>
+              <DialogDescription>
+                Enter a name for your new document.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Label htmlFor="doc-name">Document name</Label>
+              <Input
+                id="doc-name"
+                placeholder="My Document"
+                value={documentName}
+                onChange={(e) => setDocumentName(e.target.value)}
+                className="mt-2"
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsDocDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleCreateDocument}>Create</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
-};
-
-export default ControlBar; 
+}

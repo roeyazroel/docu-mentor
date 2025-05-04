@@ -13,7 +13,8 @@ export default function Page() {
               headerSubtitle: "text-sm text-gray-500",
             },
           }}
-          afterSignInUrl="/"
+          afterSignOutUrl={"/sign-in"}
+          fallbackRedirectUrl={"/documents"}
         />
 
         <div className="mt-6 text-center">

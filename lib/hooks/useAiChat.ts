@@ -1,4 +1,4 @@
-import { generateAiResponse } from "@/app/editor/actions";
+import { generateAiResponse } from "@/app/(app)/editor/actions";
 import { hasOpenAIKey } from "@/lib/openai";
 import { useCallback, useEffect, useRef, useState } from "react";
 

@@ -99,7 +99,7 @@ export function InlineDiffRenderer({
         onRejectAll={onRejectAll}
         onFinalize={onFinalize}
       />
-
+      <ModeSelector activeMode={activeMode} onModeChange={handleModeChange} />
       {/* Render the content based on the selected control mode */}
       <div className="font-mono text-sm whitespace-pre-wrap p-4 border rounded-md bg-background">
         {/* Highlight Floating Mode */}
@@ -151,7 +151,6 @@ export function InlineDiffRenderer({
       </div>
 
       {/* Mode Selector below text area */}
-      <ModeSelector activeMode={activeMode} onModeChange={handleModeChange} />
     </div>
   );
 }

@@ -1,27 +1,16 @@
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { UserButton, useUser } from "@clerk/nextjs";
-import {
-  ChevronDown,
-  FileText,
-  History,
-  Settings,
-  Share2,
-  Users,
-} from "lucide-react";
+import { useEditorContext } from "@/context/EditorContext";
+import { OrganizationSwitcher, UserButton, useUser } from "@clerk/nextjs";
+import { FileText, Settings } from "lucide-react";
+import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 
 export const EditorHeader: React.FC = () => {
   const { user } = useUser();
   const headerRef = useRef<HTMLElement>(null);
   const [showHistory, setShowHistory] = useState(false);
-
+  const { activeOrganization, setActiveOrganization } = useEditorContext();
   // Try to access the history toggle function from the parent page
   useEffect(() => {
     // Add a data attribute so the page can find this component
@@ -68,8 +57,21 @@ export const EditorHeader: React.FC = () => {
     >
       <div className="flex h-16 items-center px-0 w-full justify-between">
         <div className="flex items-center gap-2 mr-6">
-          <FileText className="h-5 w-5 text-primary" />
-          <span className="font-bold text-lg">DocuMentor</span>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-md bg-cool-gradient flex items-center justify-center text-white font-bold text-lg">
+              D
+            </div>
+            <span className="font-bold text-xl sm:inline text-foreground">
+              Documentor
+            </span>
+          </Link>
+          <Link
+            href="/documents"
+            className="flex items-center gap-1.5 ml-4 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <FileText className="h-4 w-4" />
+            <span>My Documents</span>
+          </Link>
         </div>
         {/* <div className="flex-1 flex items-center">
           <Input
@@ -81,7 +83,7 @@ export const EditorHeader: React.FC = () => {
           />
         </div> */}
         <div className="flex items-center gap-3">
-          <Button
+          {/* <Button
             variant={showHistory ? "default" : "ghost"}
             size="sm"
             className={
@@ -115,16 +117,40 @@ export const EditorHeader: React.FC = () => {
                 Manage access
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button
+          </DropdownMenu> */}
+          <OrganizationSwitcher
+            afterCreateOrganizationUrl={(organization) => {
+              console.log("organization", organization);
+              setActiveOrganization(organization.id);
+              return "/documents";
+            }}
+            afterLeaveOrganizationUrl={"/"}
+            afterSelectOrganizationUrl={(organization) => {
+              console.log("organization", organization);
+              setActiveOrganization(organization.id);
+              return "/documents";
+            }}
+            afterSelectPersonalUrl={(personal) => {
+              console.log("personal", personal);
+              setActiveOrganization(personal.id);
+              return "/documents";
+            }}
+            appearance={{
+              elements: {
+                rootBox: "w-[200px]",
+                organizationSwitcherTrigger:
+                  "w-full py-2 flex justify-between items-center rounded-md bg-muted/50 hover:bg-muted transition-colors dark:text-white dark:bg-muted/50",
+              },
+            }}
+          />
+          {/* <Button
             variant="ghost"
             size="icon"
             className="rounded-full h-9 w-9"
             aria-label="Settings"
           >
             <Settings className="h-4 w-4" />
-          </Button>
+          </Button> */}
 
           <ModeToggle />
           <UserButton signInUrl="/sign-in" />

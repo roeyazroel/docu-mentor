@@ -1,0 +1,106 @@
+/* Base styles first */
+@import "@liveblocks/react-ui/styles.css";
+@import "@liveblocks/react-tiptap/styles.css";
+
+/* Dark mode styles - using class strategy for next-themes integration */
+@import "@liveblocks/react-ui/styles/dark/attributes.css";
+
+/* TipTap specific styles for collaborative editing */
+
+/* Cursor colors for different users */
+.collaboration-cursor__caret {
+  border-left: 1px solid #0d0d0d;
+  border-right: 1px solid #0d0d0d;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+
+/* Cursor label with user name */
+.collaboration-cursor__label {
+  border-radius: 3px 3px 3px 0;
+  color: #ffffff;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  left: -1px;
+  line-height: normal;
+  padding: 0.1rem 0.3rem;
+  position: absolute;
+  top: -1.4em;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Make editor styles consistent with UI */
+.ProseMirror {
+  min-height: 300px;
+  padding: 1.5rem;
+}
+
+.ProseMirror p {
+  margin: 1rem 0;
+}
+
+.ProseMirror > * + * {
+  margin-top: 0.75em;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding: 0 1.5rem;
+}
+
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  line-height: 1.1;
+}
+
+.ProseMirror code {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+}
+
+.ProseMirror pre {
+  background: hsl(var(--secondary));
+  border-radius: 0.5rem;
+  color: hsl(var(--foreground));
+  font-family: monospace;
+  padding: 0.75rem 1rem;
+}
+
+.ProseMirror pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+.ProseMirror blockquote {
+  border-left: 3px solid hsl(var(--primary));
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Focus styles */
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* Placeholder text */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}

@@ -1,21 +1,16 @@
 "use client";
 
-import { AccessLogsPanel } from "@/components/editor/AccessLogsPanel";
-import { EditorUsersPanel } from "@/components/editor/EditorUsersPanel";
+import ChatSidebar from "@/components/chat-sidebar";
 import { FileHistoryEditor } from "@/components/editor/FileHistoryEditor";
 import { SaveIndicator } from "@/components/editor/SaveIndicator";
-import ChatSidebar from "@/components/chat-sidebar";
+import ProjectSidebar from "@/components/ProjectSidebar/project-sidebar";
 import ResizablePanel from "@/components/resizable-panel";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEditorContext } from "@/context/EditorContext";
 import { useAiChat } from "@/lib/hooks/useAiChat";
 import { useDocument } from "@/lib/hooks/useDocument";
 import { useFileSystem } from "@/lib/hooks/useFileSystem";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { ClipboardList, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 
 export default function EditorPage() {
   const { userId } = useAuth();
@@ -103,16 +98,27 @@ export default function EditorPage() {
       ) : (
         <div className="flex flex-col h-full overflow-hidden">
           <div className="flex flex-1 overflow-hidden">
-            {/* Replace ProjectSidebar with ChatSidebar */}
-            <ChatSidebar
-              messages={chatMessages}
-              inputMessage={inputMessage}
-              setInputMessage={setInputMessage}
-              handleSendMessage={handleSendMessage}
-              isGenerating={isGenerating}
-              chatContainerRef={chatContainerRef as React.RefObject<HTMLDivElement>}
-              apiKeyError={apiKeyError}
-            />
+            {/* ProjectSidebar as resizable panel on left side */}
+            <ResizablePanel
+              defaultWidth={280}
+              minWidth={240}
+              maxWidth={400}
+              side="left"
+              storageKey="editor-sidebar"
+            >
+              <ProjectSidebar
+                items={projectItems}
+                activeFileId={activeFileId}
+                onFileSelect={handleFileSelect}
+                onUpdateItems={setProjectItems}
+                onCreateFile={createFile}
+                onCreateFolder={createFolder}
+                onDeleteFile={deleteFile}
+                onDeleteFolder={deleteFolder}
+                onUpdateItemParent={updateItemParent}
+                websocketManager={ws}
+              />
+            </ResizablePanel>
 
             <FileHistoryEditor
               activeFileId={activeFileId}
@@ -131,14 +137,26 @@ export default function EditorPage() {
               showHistory={showHistory}
             />
 
+            <ChatSidebar
+              messages={chatMessages}
+              inputMessage={inputMessage}
+              setInputMessage={setInputMessage}
+              handleSendMessage={handleSendMessage}
+              isGenerating={isGenerating}
+              chatContainerRef={
+                chatContainerRef as React.RefObject<HTMLDivElement>
+              }
+              apiKeyError={apiKeyError}
+            />
+
             {/* Right Panel - Keep the users and activity tabs, but remove the chat tab */}
-            <ResizablePanel
+            {/* <ResizablePanel
               defaultWidth={320}
               minWidth={280}
               maxWidth={500}
               side="right"
-            >
-              <div className="h-full flex flex-col overflow-hidden border-l">
+            > */}
+            {/* <div className="h-full flex flex-col overflow-hidden border-l">
                 <Tabs defaultValue="users">
                   <TabsList className="w-full justify-start h-[37px] rounded-none">
                     <TabsTrigger
@@ -183,8 +201,9 @@ export default function EditorPage() {
                     <AccessLogsPanel logs={accessLogs} />
                   </TabsContent>
                 </Tabs>
-              </div>
-            </ResizablePanel>
+              </div> */}
+
+            {/* </ResizablePanel> */}
           </div>
         </div>
       )}

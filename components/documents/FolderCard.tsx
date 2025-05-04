@@ -2,33 +2,31 @@
 
 import { Document } from "@/app/(app)/documents/types";
 import { formatDistanceToNow } from "date-fns";
-import { File } from "lucide-react";
+import { Folder } from "lucide-react";
 import { useRouter } from "next/navigation";
-import DocumentActionMenu from "./DocumentActionMenu";
+import FolderActionMenu from "./FolderActionMenu";
 
-interface DocumentCardProps {
-  document: Document;
-  onCopy: (id: string) => void;
+interface FolderCardProps {
+  folder: Document;
   onDelete: (id: string) => void;
   onRename?: (id: string) => void;
   onMove?: (id: string) => void;
 }
 
-export default function DocumentCard({
-  document,
-  onCopy,
+export function FolderCard({
+  folder,
   onDelete,
   onRename,
   onMove,
-}: DocumentCardProps) {
+}: FolderCardProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/editor?document=${document.id}`);
+    router.push(`/documents?folder=${folder.id}`);
   };
 
-  const formattedDate = document.updatedAt
-    ? formatDistanceToNow(new Date(document.updatedAt), { addSuffix: true })
+  const formattedDate = folder.updatedAt
+    ? formatDistanceToNow(new Date(folder.updatedAt), { addSuffix: true })
     : "Unknown date";
 
   return (
@@ -38,19 +36,18 @@ export default function DocumentCard({
     >
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center space-x-3 flex-1 min-w-0">
-          <File className="h-10 w-10 text-blue-500" />
+          <Folder className="h-10 w-10 text-yellow-500" />
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-lg truncate">{document.name}</h3>
-            <p className="text-xs text-muted-foreground">Document</p>
+            <h3 className="font-medium text-lg truncate">{folder.name}</h3>
+            <p className="text-xs text-muted-foreground">Folder</p>
           </div>
         </div>
 
         <div onClick={(e) => e.stopPropagation()}>
-          <DocumentActionMenu
-            onCopy={() => onCopy(document.id)}
-            onDelete={() => onDelete(document.id)}
-            onRename={onRename ? () => onRename(document.id) : undefined}
-            onMove={onMove ? () => onMove(document.id) : undefined}
+          <FolderActionMenu
+            onDelete={() => onDelete(folder.id)}
+            onRename={onRename ? () => onRename(folder.id) : undefined}
+            onMove={onMove ? () => onMove(folder.id) : undefined}
           />
         </div>
       </div>

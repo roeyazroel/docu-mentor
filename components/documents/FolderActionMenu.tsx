@@ -6,18 +6,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Copy, FileDown, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { FileDown, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import React from "react";
 
-interface DocumentActionMenuProps {
-  onCopy: () => void;
+interface FolderActionMenuProps {
   onDelete: () => void;
   onRename?: () => void;
   onMove?: () => void;
 }
 
-const DocumentActionMenu: React.FC<DocumentActionMenuProps> = ({
-  onCopy,
+const FolderActionMenu: React.FC<FolderActionMenuProps> = ({
   onDelete,
   onRename,
   onMove,
@@ -27,14 +25,10 @@ const DocumentActionMenu: React.FC<DocumentActionMenuProps> = ({
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8">
           <MoreVertical className="h-4 w-4" />
-          <span className="sr-only">Open actions menu</span>
+          <span className="sr-only">Open folder actions</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onCopy}>
-          <Copy className="mr-2 h-4 w-4" />
-          <span>Make a copy</span>
-        </DropdownMenuItem>
         {onRename && (
           <DropdownMenuItem onClick={onRename}>
             <Pencil className="mr-2 h-4 w-4" />
@@ -60,4 +54,4 @@ const DocumentActionMenu: React.FC<DocumentActionMenuProps> = ({
   );
 };
 
-export default DocumentActionMenu;
+export default FolderActionMenu;

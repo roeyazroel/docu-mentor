@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { MessageSquare, Bot, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
 import ResizablePanel from "@/components/resizable-panel";
+import { Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
 import Header from "./header";
-import MessageList from "./message-list";
 import InputBar from "./input-bar";
+import MessageList from "./message-list";
 
 interface ChatSidebarProps {
   messages: Array<{ role: string; content: string; id?: string }>;
@@ -21,24 +20,24 @@ interface ChatSidebarProps {
 export default function ChatSidebar(props: ChatSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  
+
   // Load collapsed state from localStorage
   useEffect(() => {
-    const savedState = localStorage.getItem('chat-sidebar-collapsed');
-    if (savedState) setIsCollapsed(savedState === 'true');
+    const savedState = localStorage.getItem("chat-sidebar-collapsed");
+    if (savedState) setIsCollapsed(savedState === "true");
   }, []);
-  
+
   // Save collapsed state
   useEffect(() => {
-    localStorage.setItem('chat-sidebar-collapsed', isCollapsed.toString());
+    localStorage.setItem("chat-sidebar-collapsed", isCollapsed.toString());
   }, [isCollapsed]);
-  
+
   // Track unread messages
   useEffect(() => {
     if (isCollapsed && props.messages.length > 0) {
       const latestMessage = props.messages[props.messages.length - 1];
-      if (latestMessage.role === 'assistant') {
-        setUnreadCount(prev => prev + 1);
+      if (latestMessage.role === "assistant") {
+        setUnreadCount((prev) => prev + 1);
       }
     }
   }, [props.messages, isCollapsed]);
@@ -53,20 +52,20 @@ export default function ChatSidebar(props: ChatSidebarProps) {
   // Register keyboard shortcut for toggle
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
         e.preventDefault();
-        setIsCollapsed(prev => !prev);
+        setIsCollapsed((prev) => !prev);
       }
     };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   if (isCollapsed) {
     return (
       <div className="h-full w-12 border-r flex flex-col items-center py-4 bg-white dark:bg-slate-900">
-        <button 
+        <button
           onClick={() => setIsCollapsed(false)}
           className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 relative"
           aria-label="Expand chat sidebar"
@@ -82,16 +81,13 @@ export default function ChatSidebar(props: ChatSidebarProps) {
       defaultWidth={384}
       minWidth={280}
       maxWidth={480}
-      side="left"
+      side="right"
       className="border-r bg-white dark:bg-slate-900"
       storageKey="chat-sidebar-width"
     >
       <div className="flex flex-col h-full overflow-hidden">
-        <Header 
-          title="" 
-          onCollapse={() => setIsCollapsed(true)} 
-        />
-        
+        <Header title="" onCollapse={() => setIsCollapsed(true)} />
+
         {props.messages.length === 0 ? (
           // Render InputBar at the top when chat is empty
           <>
@@ -127,4 +123,4 @@ export default function ChatSidebar(props: ChatSidebarProps) {
       </div>
     </ResizablePanel>
   );
-} 
+}
